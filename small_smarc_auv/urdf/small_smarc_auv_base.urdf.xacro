@@ -290,7 +290,7 @@
     </xacro:default_imu>
 
     <!-- Mount a camera -->
-   <xacro:regular_camera_plugin_macro
+    <xacro:regular_camera_plugin_macro
         namespace="${namespace}"
         suffix=""
         parent_link="${namespace}/base_link"
@@ -304,6 +304,23 @@
         scale="0.5">
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
         <origin xyz="-0.375 0 -0.16" rpy="0 0.3 0"/>
+    </xacro:regular_camera_plugin_macro>
+	
+	<!-- Mount a camera behind the vehicle for steering -->
+    <xacro:regular_camera_plugin_macro
+        namespace="${namespace}"
+        suffix="_thruster"
+        parent_link="${namespace}/base_link"
+        topic="camera"
+        mass="0.015"
+        update_rate="30"
+        hfov="1.8125"
+        width="200"
+        height="200"
+        stddev="0.02"
+        scale="0.5">
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <origin xyz="-0.975 0 0" rpy="0 0 0"/>
     </xacro:regular_camera_plugin_macro>
   </xacro:macro>
 </robot>
