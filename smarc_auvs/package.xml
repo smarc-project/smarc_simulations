@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>small_smarc_auv</name>
+  <name>smarc_auvs</name>
   <version>0.0.0</version>
   <description>The small_smarc_auv package</description>
 
