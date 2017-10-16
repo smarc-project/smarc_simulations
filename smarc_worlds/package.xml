@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>underwater_envs</name>
+  <name>smarc_worlds</name>
   <version>0.0.0</version>
   <description>The underwater_envs package</description>
 

@@ -22,7 +22,7 @@
         <rosparam subst_value="true">
             meshes:
                 heightmap:
-                    mesh: package://underwater_envs/world_models/sand_heightmap_pipe/meshes/heightmap_pipe.dae
+                    mesh: package://smarc_worlds/world_models/sand_heightmap_pipe/meshes/heightmap_pipe.dae
                     model: sand_heightmap_pipe
                 seafloor:
                     plane: [2000, 2000, 0.1]
