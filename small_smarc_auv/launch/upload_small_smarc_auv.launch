@@ -33,7 +33,8 @@
     <node name="ground_truth_to_tf" pkg="message_to_tf" type="message_to_tf" output="screen">
       <param name="odometry_topic" value="/$(arg namespace)/pose_gt" />
       <param name="frame_id" value="/$(arg world_frame)" />
-      <param name="tf_prefix" value="$(arg namespace)" />
+      <param name="tf_prefix" value="/$(arg namespace)" />
+      <param name="child_frame_id" value="base_link" />
     </node>
   </group>
 
