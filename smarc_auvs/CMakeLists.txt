@@ -11,7 +11,7 @@ find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-set(PACKAGE_NAME small_smarc_auv)
+set(PACKAGE_NAME smarc_auvs)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -176,7 +176,7 @@ include_directories(
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(DIRECTORY mesh launch robots urdf
+install(DIRECTORY models
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${PACKAGE_NAME}
         PATTERN "*~" EXCLUDE)
 

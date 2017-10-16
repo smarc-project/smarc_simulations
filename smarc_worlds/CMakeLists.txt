@@ -22,6 +22,6 @@ catkin_install_python(PROGRAMS scripts/spawn_model.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 
-install(DIRECTORY launch Media worlds models world_models
+install(DIRECTORY launch Media worlds world_models
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         PATTERN "*~" EXCLUDE)
