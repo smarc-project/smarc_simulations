@@ -35,7 +35,7 @@ roslaunch uuv_descriptions empty_underwater_world.launch
 ```
 Then we open a new tab and launch a simulation of the small smarc auv:
 ```
-roslaunch small_smarc_auv upload_small_smarc_auv.launch
+roslaunch smarc_auvs upload_small_smarc_auv.launch
 ```
 
 ## Playing around
