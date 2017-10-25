@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="large_rock">
+    <static>true</static>
+    <link name="link">
+      <collision name="large_rock_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh><uri>model://large_rock/meshes/large_rock_collision.stl</uri></mesh>
+        </geometry>
+        <laserRetro>200</laserRetro>
+      </collision>
+
+      <visual name="large_rock_visual">
+        <cast_shadows>true</cast_shadows>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh><uri>model://large_rock/meshes/large_rock.dae</uri></mesh>
+        </geometry>
+        <laserRetro>200</laserRetro>
+      </visual>
+    </link>
+  </model>
+</sdf>
