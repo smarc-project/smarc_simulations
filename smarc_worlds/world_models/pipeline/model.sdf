@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="pipeline">
+    <static>true</static>
+    <link name="link">
+      <collision name="pipeline_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh><uri>model://pipeline/meshes/pipeline_collision.stl</uri></mesh>
+        </geometry>
+        <laser_retro>200</laser_retro>
+      </collision>
+
+      <visual name="pipeline_visual">
+        <cast_shadows>true</cast_shadows>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh><uri>model://pipeline/meshes/pipeline.dae</uri></mesh>
+        </geometry>
+		<material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Orange</name>
+           </script>
+        </material>
+		<laser_retro>200</laser_retro>
+      </visual>
+    </link>
+  </model>
+</sdf>
