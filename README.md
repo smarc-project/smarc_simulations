@@ -56,4 +56,3 @@ Check `rostopic list` and try to control e.g. the fins.
 
 In rviz, you can get the camera image on `/small_smarc_auv/small_smarc_auv/camera/camera_image`
 and the left and right side scans on `small_smarc_auv/sss_left` and `small_smarc_auv/sss_right`, respectively.
-
