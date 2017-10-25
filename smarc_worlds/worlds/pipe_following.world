@@ -69,8 +69,15 @@
 
     <!-- Heightmap -->
     <include>
-      <uri>model://sand_heightmap_pipe</uri>
+      <uri>model://sand_heightmap</uri>
       <pose>0 0 -95 0 0 0</pose>
+    </include>
+
+    <!-- Pipeline -->
+    <include>
+      <uri>model://pipeline</uri>
+      <pose>0 0 -95 0 0 0</pose>
+      <name>pipeline</name>
     </include>
 
     <plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
