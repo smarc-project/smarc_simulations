@@ -19,6 +19,7 @@
   <!-- Import macro files -->
   <xacro:include filename="$(find uuv_descriptions)/models/common/urdf/common.urdf.xacro" />
   <xacro:include filename="$(find uuv_sensor_plugins_ros)/urdf/sensor_snippets.xacro"/>
+  <xacro:include filename="$(find smarc_sensor_plugins_ros)/urdf/sonar_snippets.xacro"/>
 
   <!-- Properties -->
   <xacro:property name="mass" value="30.48"/>
@@ -235,7 +236,7 @@
     </xacro:dvl_plugin_macro> -->
 
     <!-- Side scan sonar left -->
-    <xacro:multibeam_sonar
+    <xacro:multibeam_intensity_sonar
       namespace="${namespace}"
       suffix="left"
       parent_link="${namespace}/base_link"
@@ -252,10 +253,10 @@
       <origin xyz="0.41225 0.1498 -0.04615" rpy="${0.5*pi} ${-5*d2r+pi/3.0} ${0.5*pi}" />
       <visual>
       </visual>
-    </xacro:multibeam_sonar>
+    </xacro:multibeam_intensity_sonar>
 
     <!-- Side scan sonar right -->
-    <xacro:multibeam_sonar
+    <xacro:multibeam_intensity_sonar
       namespace="${namespace}"
       suffix="right"
       parent_link="${namespace}/base_link"
@@ -272,7 +273,7 @@
       <origin xyz="0.41225 -0.1498 -0.04615" rpy="${0.5*pi} ${-5*d2r+pi/3.0} ${-0.5*pi}" />
       <visual>
       </visual>
-    </xacro:multibeam_sonar>
+    </xacro:multibeam_intensity_sonar>
 
     <!-- RPT
     <xacro:default_rpt namespace="${namespace}" parent_link="${namespace}/base_link">
