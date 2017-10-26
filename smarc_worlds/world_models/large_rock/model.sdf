@@ -8,7 +8,7 @@
         <geometry>
           <mesh><uri>model://large_rock/meshes/large_rock_collision.stl</uri></mesh>
         </geometry>
-        <laserRetro>200</laserRetro>
+        <laser_retro>200</laser_retro>
       </collision>
 
       <visual name="large_rock_visual">
@@ -17,7 +17,7 @@
         <geometry>
           <mesh><uri>model://large_rock/meshes/large_rock.dae</uri></mesh>
         </geometry>
-        <laserRetro>200</laserRetro>
+        <laser_retro>200</laser_retro>
       </visual>
     </link>
   </model>
