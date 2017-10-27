@@ -15,16 +15,17 @@
  *
 */
 /*
- * Desc: Ray Plugin
- * Author: Nate Koenig mod by John Hsu
+ * Desc: Underwater Sonar Plugin
+ * Author: Nate Koenig mod by John Hsu and Nils Bore
  */
 
-#ifndef _GAZEBO_RAY_PLUGIN_HH_
-#define _GAZEBO_RAY_PLUGIN_HH_
+#ifndef _GAZEBO_UNDERWATER_SONAR_PLUGIN_HH_
+#define _GAZEBO_UNDERWATER_SONAR_PLUGIN_HH_
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/sensors/SensorTypes.hh>
-#include <gazebo/sensors/RaySensor.hh>
+//#include <gazebo/sensors/RaySensor.hh>
+#include <smarc_gazebo_plugins/UnderwaterSonarSensor.hh>
 #include <gazebo/util/system.hh>
 
 namespace gazebo
@@ -49,10 +50,10 @@ namespace gazebo
     protected: physics::WorldPtr world;
 
     /// \brief The parent sensor
-    private: sensors::RaySensorPtr parentSensor;
+	private: std::shared_ptr<sensors::UnderwaterSonarSensor> parentSensor;
 
     /// \brief The connection tied to UnderwaterSonarPlugin::OnNewLaserScans()
     private: event::ConnectionPtr newLaserScansConnection;
   };
 }
-#endif
+#endif // _GAZEBO_UNDERWATER_SONAR_PLUGIN_HH_
