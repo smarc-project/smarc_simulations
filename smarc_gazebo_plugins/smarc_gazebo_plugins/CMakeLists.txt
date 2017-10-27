@@ -114,7 +114,7 @@ catkin_package(
                ${GAZEBO_INCLUDE_DIRS}
                ${GAZEBO_MSG_INCLUDE_DIRS}
                ${EIGEN3_INCLUDE_DIRS}
-  LIBRARIES underwater_sonar_plugin
+  LIBRARIES underwater_sonar_sensor underwater_sonar_plugin
   DEPENDS gazebo
 )
 
@@ -129,6 +129,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include
 link_directories(${EIGEN3_LIBRARY_DIRS} ${GAZEBO_LIBRARY_DIRS})
 
 ## Declare a C++ library
+add_library(underwater_sonar_sensor
+  src/UnderwaterSonarSensor.cc
+)
+
 add_library(underwater_sonar_plugin
   src/UnderwaterSonarPlugin.cc
 )
@@ -154,7 +158,12 @@ add_library(underwater_sonar_plugin
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(underwater_sonar_sensor
+  ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
+)
+
 target_link_libraries(underwater_sonar_plugin
+  underwater_sonar_sensor
   ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
 )
 
@@ -174,6 +183,7 @@ target_link_libraries(underwater_sonar_plugin
 
 ## Mark executables and/or libraries for installation
 install(TARGETS
+  underwater_sonar_sensor
   underwater_sonar_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
