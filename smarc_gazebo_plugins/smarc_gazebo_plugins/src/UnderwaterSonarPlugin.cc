@@ -45,7 +45,7 @@ void UnderwaterSonarPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_
 {
   // Get then name of the parent sensor
   this->parentSensor =
-    std::dynamic_pointer_cast<sensors::UnderwaterSonarSensor>(_parent);
+    std::dynamic_pointer_cast<sensors::RaySensor>(_parent);
 
   if (!this->parentSensor)
     gzthrow("UnderwaterSonarPlugin requires a Ray Sensor as its parent");

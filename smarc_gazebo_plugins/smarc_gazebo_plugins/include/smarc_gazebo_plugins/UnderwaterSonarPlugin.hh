@@ -24,7 +24,7 @@
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/sensors/SensorTypes.hh>
-//#include <gazebo/sensors/RaySensor.hh>
+#include <gazebo/sensors/RaySensor.hh>
 #include <smarc_gazebo_plugins/UnderwaterSonarSensor.hh>
 #include <gazebo/util/system.hh>
 
@@ -50,7 +50,7 @@ namespace gazebo
     protected: physics::WorldPtr world;
 
     /// \brief The parent sensor
-	private: std::shared_ptr<sensors::UnderwaterSonarSensor> parentSensor;
+	private: std::shared_ptr<sensors::RaySensor> parentSensor;
 
     /// \brief The connection tied to UnderwaterSonarPlugin::OnNewLaserScans()
     private: event::ConnectionPtr newLaserScansConnection;
