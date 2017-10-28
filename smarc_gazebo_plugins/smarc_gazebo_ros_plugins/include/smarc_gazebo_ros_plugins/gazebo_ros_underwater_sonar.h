@@ -36,6 +36,7 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/sensors/SensorTypes.hh>
 #include <smarc_gazebo_plugins/UnderwaterSonarPlugin.hh>
+#include <gazebo/plugins/RayPlugin.hh>
 #include <gazebo_plugins/gazebo_ros_utils.h>
 
 #include <gazebo_plugins/PubQueue.h>
@@ -64,7 +65,7 @@ namespace gazebo
     private: std::string world_name_;
     private: physics::WorldPtr world_;
     /// \brief The parent sensor
-	private: std::shared_ptr<sensors::UnderwaterSonarSensor> parent_ray_sensor_;
+	private: std::shared_ptr<sensors::RaySensor> parent_ray_sensor_;
 
     /// \brief pointer to ros node
     private: ros::NodeHandle* rosnode_;
