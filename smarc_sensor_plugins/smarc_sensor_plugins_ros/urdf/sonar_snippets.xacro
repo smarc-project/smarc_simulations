@@ -16,6 +16,8 @@
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- <plugin name="register_underwater_sonar_sensor" filename="libregister_underwater_sonar_sensor.so"/> -->
+
   <!-- Macro for a minimal collision block (for when you do not want collision block but gazebo needs one) -->
   <xacro:macro name="no_collision">
     <collision>
@@ -51,7 +53,7 @@
   </joint>
   
   <gazebo reference="${namespace}/sonar${suffix}_link">
-    <sensor type="ray" name="sonar${suffix}">
+    <sensor type="underwater_sonar" name="sonar${suffix}">
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
       <retro>true</retro>

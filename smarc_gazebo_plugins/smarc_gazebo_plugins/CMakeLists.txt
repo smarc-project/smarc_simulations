@@ -7,6 +7,7 @@ find_package(gazebo REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
+#find_package(OGRE REQUIRED)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -137,6 +138,9 @@ add_library(underwater_sonar_plugin
   src/UnderwaterSonarPlugin.cc
 )
 
+add_library(register_underwater_sonar_sensor
+  src/RegisterUnderwaterSonarSensor.cc
+)
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -167,6 +171,10 @@ target_link_libraries(underwater_sonar_plugin
   ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
 )
 
+target_link_libraries(register_underwater_sonar_sensor
+  underwater_sonar_sensor
+  ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
+)
 #############
 ## Install ##
 #############
@@ -185,6 +193,7 @@ target_link_libraries(underwater_sonar_plugin
 install(TARGETS
   underwater_sonar_sensor
   underwater_sonar_plugin
+  register_underwater_sonar_sensor
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

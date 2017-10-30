@@ -50,7 +50,7 @@ namespace gazebo
     protected: physics::WorldPtr world;
 
     /// \brief The parent sensor
-	private: std::shared_ptr<sensors::RaySensor> parentSensor;
+	private: std::shared_ptr<sensors::UnderwaterSonarSensor> parentSensor;
 
     /// \brief The connection tied to UnderwaterSonarPlugin::OnNewLaserScans()
     private: event::ConnectionPtr newLaserScansConnection;

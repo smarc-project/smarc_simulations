@@ -26,6 +26,8 @@
 #include <gazebo/sensors/Sensor.hh>
 #include <gazebo/util/system.hh>
 
+void RegisterUnderwaterSonarSensor();
+
 namespace gazebo
 {
   class OgreDynamicLines;
