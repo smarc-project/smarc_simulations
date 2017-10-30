@@ -44,7 +44,7 @@
 using namespace gazebo;
 using namespace sensors;
 
-GZ_REGISTER_STATIC_SENSOR("ray", UnderwaterSonarSensor)
+GZ_REGISTER_STATIC_SENSOR("underwater_sonar", UnderwaterSonarSensor)
 
 //////////////////////////////////////////////////
 UnderwaterSonarSensor::UnderwaterSonarSensor()

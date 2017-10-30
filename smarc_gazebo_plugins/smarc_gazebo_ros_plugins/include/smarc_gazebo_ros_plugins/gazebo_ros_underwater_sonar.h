@@ -65,7 +65,7 @@ namespace gazebo
     private: std::string world_name_;
     private: physics::WorldPtr world_;
     /// \brief The parent sensor
-	private: std::shared_ptr<sensors::RaySensor> parent_ray_sensor_;
+	private: std::shared_ptr<sensors::UnderwaterSonarSensor> parent_ray_sensor_;
 
     /// \brief pointer to ros node
     private: ros::NodeHandle* rosnode_;

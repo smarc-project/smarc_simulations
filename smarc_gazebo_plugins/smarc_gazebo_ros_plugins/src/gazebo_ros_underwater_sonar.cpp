@@ -74,7 +74,7 @@ void GazeboUnderwaterSonar::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 
   GAZEBO_SENSORS_USING_DYNAMIC_POINTER_CAST;
   this->parent_ray_sensor_ =
-    dynamic_pointer_cast<sensors::RaySensor>(_parent);
+    dynamic_pointer_cast<sensors::UnderwaterSonarSensor>(_parent);
 
   if (!this->parent_ray_sensor_)
     gzthrow("GazeboUnderwaterSonar controller requires a Ray Sensor as its parent");
