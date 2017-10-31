@@ -66,6 +66,12 @@
             <min_angle>-${0.5*fov}</min_angle>
             <max_angle>${0.5*fov}</max_angle>
           </horizontal>
+		  <vertical>
+		    <resolution>0.5</resolution>
+		    <samples>2</samples>
+			<min_angle>-${0.5*fov/samples}</min_angle>
+            <max_angle>${0.5*fov/samples}</max_angle>
+		  </vertical>
         </scan>
         <range>
           <min>${range_min}</min>

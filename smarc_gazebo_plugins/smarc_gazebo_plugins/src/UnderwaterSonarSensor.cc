@@ -452,7 +452,12 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
   scan->set_vertical_angle_min(this->VerticalAngleMin().Radian());
   scan->set_vertical_angle_max(this->VerticalAngleMax().Radian());
-  scan->set_vertical_angle_step(this->VerticalAngleResolution());
+  if (this->VerticalRangeCount() == 1 && this->VerticalRayCount() > 1) {
+    scan->set_vertical_angle_step((this->VerticalAngleMax() - this->VerticalAngleMin()).Radian());
+  }
+  else {
+    scan->set_vertical_angle_step(this->VerticalAngleResolution());
+  }
   scan->set_vertical_count(this->VerticalRangeCount());
 
   scan->set_range_min(this->RangeMin());
@@ -465,126 +470,78 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
   unsigned int rangeCount = this->RangeCount();
   unsigned int verticalRayCount = this->VerticalRayCount();
   unsigned int verticalRangeCount = this->VerticalRangeCount();
+  double rayAngle = this->AngleResolution();
 
-  // Interpolation: for every point in range count, compute interpolated value
-  // using four bounding ray samples.
-  // (vja, hja)   (vja, hjb)
-  //       x---------x
-  //       |         |
-  //       |    o    |
-  //       |         |
-  //       x---------x
-  // (vjb, hja)   (vjb, hjb)
-  // where o: is the range to be interpolated
-  //       x: ray sample
-  //       vja: is the previous index of ray in vertical direction
-  //       vjb: is the next index of ray in vertical direction
-  //       hja: is the previous index of ray in horizontal direction
-  //       hjb: is the next index of ray in horizontal direction
-  unsigned int hja, hjb;
-  unsigned int vja = 0, vjb = 0;
-  // percentage of interpolation between rays
-  double vb = 0, hb;
-  // indices of ray samples
-  int j1, j2, j3, j4;
-  // range values of ray samples
-  double r1, r2, r3, r4;
+  /*
+  printf("Vertical rays: %u", verticalRayCount);
+  printf("Vertical ranges: %u", verticalRangeCount);
+  printf("Vertical min angle: %f", this->VerticalAngleMin().Radian());
+  printf("Vertical max angle: %f", this->VerticalAngleMax().Radian());
+  printf("Vertical angle step: %f", this->VerticalAngleResolution());
+  printf("Horizontal rays: %u", rayCount);
+  printf("Horizontal ranges: %u", rangeCount);
+  printf("Horizontal angle step: %f", this->AngleResolution());
+  */
+  GZ_ASSERT(verticalRayCount == 2 && verticalRangeCount == 1,
+          "Vertical ray count needs to be 2 for angle interpolation");
+  GZ_ASSERT(rayCount == rangeCount,
+          "Horizontal ray count needs to be the same as ranges");
 
-  // Check for the common case of vertical and horizontal resolution being 1,
-  // which means that ray count == range count and we can do simple lookup
-  // of ranges and intensity data, skipping interpolation.  We could do this
-  // check independently for vertical and horizontal, but that's more
-  // complexity for an unlikely use case.
-  bool interp =
-    ((rayCount != rangeCount) || (verticalRayCount != verticalRangeCount));
-
-  // interpolate in vertical direction
-  for (unsigned int j = 0; j < verticalRangeCount; ++j)
+  // interpolate in horizontal direction
+  for (unsigned int i = 0; i < rangeCount-1; ++i) // TODO: fix the last one eventually
   {
-    if (interp)
+    double angle, range, range_right, range_above, intensity;
+    range = this->dataPtr->laserShape->GetRange(this->RayCount() + i);
+    range_right = this->dataPtr->laserShape->GetRange(this->RayCount() + i + 1);
+    range_above = this->dataPtr->laserShape->GetRange(i);
+
+	ignition::math::Vector3d p_right(0.0, range_right*sin(rayAngle), range_right*cos(rayAngle)-range);
+	ignition::math::Vector3d p_above(range_above*sin(rayAngle), 0.0, range_above*cos(rayAngle)-range); // not certain that rayAngle is correct here
+	p_right.Normalize();
+	p_above.Normalize();
+	ignition::math::Vector3d normal = p_right.Cross(p_above);
+	normal.Normalize();
+	angle = acos(fabs(normal.Z()));
+
+	intensity = this->dataPtr->laserShape->GetRetro(this->RayCount() + i);
+    physics::RayShapePtr ray = physics::SemanticMultiRayShape::StaticGetRay(this->dataPtr->laserShape, this->RayCount() + i);
+    double _dist;
+    std::string _entity;
+    ray->GetIntersection(_dist, _entity);
+    //printf("%s", _entity.c_str());
+
+    // Mask ranges outside of min/max to +/- inf, as per REP 117
+    if (range >= this->RangeMax())
     {
-      vb = (verticalRangeCount == 1) ? 0 :
-          static_cast<double>(j * (verticalRayCount - 1))
-          / (verticalRangeCount - 1);
-      vja = static_cast<int>(floor(vb));
-      vjb = std::min(vja + 1, verticalRayCount - 1);
-      vb = vb - floor(vb);
-
-      GZ_ASSERT(vja < verticalRayCount,
-          "Invalid vertical ray index used for interpolation");
-      GZ_ASSERT(vjb < verticalRayCount,
-          "Invalid vertical ray index used for interpolation");
+      range = IGN_DBL_INF;
     }
-    // interpolate in horizontal direction
-    for (unsigned int i = 0; i < rangeCount; ++i)
+    else if (range <= this->RangeMin())
     {
-      double range, intensity;
-      if (interp)
-      {
-        hb = (rangeCount == 1)? 0 : static_cast<double>(i * (rayCount - 1))
-            / (rangeCount - 1);
-        hja = static_cast<int>(floor(hb));
-        hjb = std::min(hja + 1, rayCount - 1);
-        hb = hb - floor(hb);
-
-        GZ_ASSERT(hja < rayCount,
-            "Invalid horizontal ray index used for interpolation");
-        GZ_ASSERT(hjb < rayCount,
-            "Invalid horizontal ray index used for interpolation");
-
-        // indices of 4 corners
-        j1 = hja + vja * rayCount;
-        j2 = hjb + vja * rayCount;
-        j3 = hja + vjb * rayCount;
-        j4 = hjb + vjb * rayCount;
-
-        // range readings of 4 corners
-        r1 = this->LaserShape()->GetRange(j1);
-        r2 = this->LaserShape()->GetRange(j2);
-        r3 = this->LaserShape()->GetRange(j3);
-        r4 = this->LaserShape()->GetRange(j4);
-        range = (1-vb)*((1 - hb) * r1 + hb * r2)
-            + vb *((1 - hb) * r3 + hb * r4);
-
-        // intensity is averaged
-        intensity = 0.25 * (this->LaserShape()->GetRetro(j1)
-            + this->LaserShape()->GetRetro(j2)
-            + this->LaserShape()->GetRetro(j3)
-            + this->LaserShape()->GetRetro(j4));
-      }
-      else
-      {
-        range = this->dataPtr->laserShape->GetRange(j * this->RayCount() + i);
-        intensity = this->dataPtr->laserShape->GetRetro(j *
-            this->RayCount() + i);
-        physics::RayShapePtr ray = physics::SemanticMultiRayShape::StaticGetRay(this->dataPtr->laserShape, j * this->RayCount() + i);
-        double _dist;
-        std::string _entity;
-        ray->GetIntersection(_dist, _entity);
-        printf("%s", _entity.c_str());
-      }
-
-      // Mask ranges outside of min/max to +/- inf, as per REP 117
-      if (range >= this->RangeMax())
-      {
-        range = IGN_DBL_INF;
-      }
-      else if (range <= this->RangeMin())
-      {
-        range = -IGN_DBL_INF;
-      }
-      else if (this->noises.find(RAY_NOISE) !=
-               this->noises.end())
-      {
-        // currently supports only one noise model per laser sensor
-        range = this->noises[RAY_NOISE]->Apply(range);
-        range = ignition::math::clamp(range,
-            this->RangeMin(), this->RangeMax());
-      }
-
-      scan->add_ranges(range);
-      scan->add_intensities(intensity);
+      range = -IGN_DBL_INF;
     }
+    else if (this->noises.find(RAY_NOISE) !=
+             this->noises.end())
+    {
+      // currently supports only one noise model per laser sensor
+	  range = this->noises[RAY_NOISE]->Apply(range);
+      range = ignition::math::clamp(range,
+              this->RangeMin(), this->RangeMax());
+    }
+
+	// TODO: make these into proper parameters
+	double SL = 200.0; // source level
+    double TS = double(intensity)*(0.5*M_PI-angle)/M_PI; // target strength, probably dir should be DI
+	double TL = 0.5*range; // transmission loss
+	double NL = 30; // noise level
+	double DI = 0.0; // directivity index 
+    double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+
+	//intensity = intensity + 90.0 - 180.0/M_PI*angle;
+	//intensity = 180.0/M_PI*angle;
+    intensity = int(SNR);
+
+    scan->add_ranges(range);
+    scan->add_intensities(intensity);
   }
 
   if (this->dataPtr->scanPub && this->dataPtr->scanPub->HasConnections())
