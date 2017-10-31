@@ -130,6 +130,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include
 link_directories(${EIGEN3_LIBRARY_DIRS} ${GAZEBO_LIBRARY_DIRS})
 
 ## Declare a C++ library
+add_library(semantic_multi_ray_shape
+  src/SemanticMultiRayShape.cc
+)
+
 add_library(underwater_sonar_sensor
   src/UnderwaterSonarSensor.cc
 )
@@ -162,7 +166,12 @@ add_library(register_underwater_sonar_sensor
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(semantic_multi_ray_shape
+  ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
+)
+
 target_link_libraries(underwater_sonar_sensor
+  semantic_multi_ray_shape
   ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
 )
 
@@ -191,6 +200,7 @@ target_link_libraries(register_underwater_sonar_sensor
 
 ## Mark executables and/or libraries for installation
 install(TARGETS
+  semantic_multi_ray_shape
   underwater_sonar_sensor
   underwater_sonar_plugin
   register_underwater_sonar_sensor

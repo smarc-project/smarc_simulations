@@ -39,6 +39,7 @@
 #include <gazebo/sensors/SensorFactory.hh>
 #include <smarc_gazebo_plugins/UnderwaterSonarSensorPrivate.hh>
 #include <smarc_gazebo_plugins/UnderwaterSonarSensor.hh>
+#include <smarc_gazebo_plugins/SemanticMultiRayShape.hh>
 #include <gazebo/sensors/Noise.hh>
 
 using namespace gazebo;
@@ -556,6 +557,11 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
         range = this->dataPtr->laserShape->GetRange(j * this->RayCount() + i);
         intensity = this->dataPtr->laserShape->GetRetro(j *
             this->RayCount() + i);
+        physics::RayShapePtr ray = physics::SemanticMultiRayShape::StaticGetRay(this->dataPtr->laserShape, j * this->RayCount() + i);
+        double _dist;
+        std::string _entity;
+        ray->GetIntersection(_dist, _entity);
+        printf("%s", _entity.c_str());
       }
 
       // Mask ranges outside of min/max to +/- inf, as per REP 117
