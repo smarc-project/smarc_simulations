@@ -99,6 +99,7 @@ void GazeboUnderwaterSonar::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
     this->topic_name_ = this->sdf->Get<std::string>("topicName");
 
   this->laser_connect_count_ = 0;
+  this->entities_connect_count_ = 0;
 
     // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -147,6 +148,14 @@ void GazeboUnderwaterSonar::LoadThread()
       ros::VoidPtr(), NULL);
     this->pub_ = this->rosnode_->advertise(ao);
     this->pub_queue_ = this->pmq.addPub<sensor_msgs::LaserScan>();
+    ros::AdvertiseOptions eao =
+      ros::AdvertiseOptions::create<smarc_gazebo_ros_plugins::SonarEntities>(
+      this->topic_name_+"_entities", 1,
+      boost::bind(&GazeboUnderwaterSonar::EntitiesConnect, this),
+      boost::bind(&GazeboUnderwaterSonar::EntitiesDisconnect, this),
+      ros::VoidPtr(), NULL);
+	this->entities_pub_ = this->rosnode_->advertise(eao);
+	this->entities_pub_queue_ = this->pmq.addPub<smarc_gazebo_ros_plugins::SonarEntities>();
   }
 
   // Initialize the controller
@@ -157,13 +166,35 @@ void GazeboUnderwaterSonar::LoadThread()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Increment count
+void GazeboUnderwaterSonar::EntitiesConnect()
+{
+  this->entities_connect_count_++;
+  if (this->entities_connect_count_ == 1) {
+    this->entities_sub_ =
+      this->gazebo_node_->Subscribe(this->parent_ray_sensor_->Topic() + "_entities",
+                                    &GazeboUnderwaterSonar::OnEntities, this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Decrement count
+void GazeboUnderwaterSonar::EntitiesDisconnect()
+{
+  this->entities_connect_count_--;
+  if (this->entities_connect_count_ == 0)
+    this->entities_sub_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Increment count
 void GazeboUnderwaterSonar::LaserConnect()
 {
   this->laser_connect_count_++;
-  if (this->laser_connect_count_ == 1)
+  if (this->laser_connect_count_ == 1) {
     this->laser_scan_sub_ =
       this->gazebo_node_->Subscribe(this->parent_ray_sensor_->Topic(),
                                     &GazeboUnderwaterSonar::OnScan, this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -201,4 +232,14 @@ void GazeboUnderwaterSonar::OnScan(ConstLaserScanStampedPtr &_msg)
             laser_msg.intensities.begin());
   this->pub_queue_->push(laser_msg, this->pub_);
 }
+
+void GazeboUnderwaterSonar::OnEntities(ConstGzString_VPtr &_msg)
+{
+  smarc_gazebo_ros_plugins::SonarEntities entities_msg;
+  for (const std::string& ent : _msg->data()) {
+	entities_msg.entities.push_back(ent);
+  }
+  this->entities_pub_queue_->push(entities_msg, this->entities_pub_);
+}
+
 }

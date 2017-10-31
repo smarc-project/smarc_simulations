@@ -43,11 +43,17 @@ namespace gazebo
       /// \brief Publisher for the scans
       public: transport::PublisherPtr scanPub;
 
+      /// \brief Publisher for the entities
+      public: transport::PublisherPtr entityPub;
+			  //
       /// \brief Mutex to protect laserMsg
       public: std::mutex mutex;
 
       /// \brief Laser message.
       public: msgs::LaserScanStamped laserMsg;
+     
+      /// \brief Entity message
+	  public: msgs::GzString_V entityMsg;
     };
   }
 }

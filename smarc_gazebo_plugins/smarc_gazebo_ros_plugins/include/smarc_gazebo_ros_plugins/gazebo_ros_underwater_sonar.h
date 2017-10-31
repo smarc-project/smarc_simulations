@@ -40,6 +40,7 @@
 #include <gazebo_plugins/gazebo_ros_utils.h>
 
 #include <gazebo_plugins/PubQueue.h>
+#include <smarc_gazebo_ros_plugins/SonarEntities.h>
 
 namespace gazebo
 {
@@ -57,8 +58,11 @@ namespace gazebo
 
     /// \brief Keep track of number of connctions
     private: int laser_connect_count_;
+    private: int entities_connect_count_;
     private: void LaserConnect();
     private: void LaserDisconnect();
+    private: void EntitiesConnect();
+    private: void EntitiesDisconnect();
 
     // Pointer to the model
     GazeboRosPtr gazebo_ros_;
@@ -70,7 +74,9 @@ namespace gazebo
     /// \brief pointer to ros node
     private: ros::NodeHandle* rosnode_;
     private: ros::Publisher pub_;
+    private: ros::Publisher entities_pub_;
     private: PubQueue<sensor_msgs::LaserScan>::Ptr pub_queue_;
+    private: PubQueue<smarc_gazebo_ros_plugins::SonarEntities>::Ptr entities_pub_queue_;
 
     /// \brief topic name
     private: std::string topic_name_;
@@ -92,7 +98,9 @@ namespace gazebo
 
     private: gazebo::transport::NodePtr gazebo_node_;
     private: gazebo::transport::SubscriberPtr laser_scan_sub_;
+    private: gazebo::transport::SubscriberPtr entities_sub_;
     private: void OnScan(ConstLaserScanStampedPtr &_msg);
+    private: void OnEntities(ConstGzString_VPtr &_msg);
 
     /// \brief prevents blocking
     private: PubMultiQueue pmq;
