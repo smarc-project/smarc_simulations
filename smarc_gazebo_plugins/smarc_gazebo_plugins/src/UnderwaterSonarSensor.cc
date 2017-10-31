@@ -75,6 +75,8 @@ void UnderwaterSonarSensor::Load(const std::string &_worldName)
   Sensor::Load(_worldName);
   this->dataPtr->scanPub =
     this->node->Advertise<msgs::LaserScanStamped>(this->Topic(), 50);
+  this->dataPtr->entityPub =
+    this->node->Advertise<msgs::GzString_V>(this->Topic()+"_entities", 50);
 
   GZ_ASSERT(this->world != NULL,
       "UnderwaterSonarSensor did not get a valid World pointer");
@@ -439,8 +441,11 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
   msgs::Set(this->dataPtr->laserMsg.mutable_time(),
             this->lastMeasurementTime);
+  //msgs::Set(this->dataPtr->entityMsg.mutable_time(),
+  //          this->lastMeasurementTime);
 
   msgs::LaserScan *scan = this->dataPtr->laserMsg.mutable_scan();
+  msgs::GzString_V *entities = &this->dataPtr->entityMsg;
 
   // Store the latest laser scans into laserMsg
   msgs::Set(scan->mutable_world_pose(),
@@ -465,6 +470,7 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
   scan->clear_ranges();
   scan->clear_intensities();
+  entities->clear_data();
 
   unsigned int rayCount = this->RayCount();
   unsigned int rangeCount = this->RangeCount();
@@ -542,10 +548,13 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
     scan->add_ranges(range);
     scan->add_intensities(intensity);
+	entities->add_data(_entity);
   }
 
   if (this->dataPtr->scanPub && this->dataPtr->scanPub->HasConnections())
     this->dataPtr->scanPub->Publish(this->dataPtr->laserMsg);
+  if (this->dataPtr->entityPub && this->dataPtr->entityPub->HasConnections())
+    this->dataPtr->entityPub->Publish(this->dataPtr->entityMsg);
 
   return true;
 }
