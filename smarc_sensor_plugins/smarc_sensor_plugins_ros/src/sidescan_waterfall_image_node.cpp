@@ -39,7 +39,10 @@ public:
     std::default_random_engine generator;
 
     //Eigen::VectorXi sample_indices;
-    Eigen::Vector3d last_pos;
+    //Eigen::Vector3d last_pos;
+	cv::Point3f last_pos;
+
+	//EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     WaterfallImageNode()
     {
@@ -65,21 +68,6 @@ public:
             side_name = "right";
         }
 
-        last_pos.setZero();
-
-        // with start angle and fov, we should be able to decide the index of the samples to keep
-        /*
-        sample_indices.resize(samples);
-        double height = double(samples)/tan(fov);
-        cout << "Height: " << height << endl;
-        for (int i = 0; i < samples; ++i) {
-            double dindex = atan(double(i+0.5)/height);
-            int index = int(dindex*double(rays)/fov);
-            sample_indices[i] = index;
-        }
-        cout << "Sample indices: " << sample_indices << endl;
-        */
-
         offset = 5;
         width = 2*samples + 2*width;
         waterfall_image = cv::Mat::zeros(timesteps, width, CV_8UC1);
@@ -103,10 +91,10 @@ public:
 
         auto min_range_iter = std::min_element(scan->ranges.begin(), scan->ranges.end());
         double depth = double(*min_range_iter);
-        Eigen::Vector3d current_pos(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+		cv::Point3f current_pos(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
         double pixel_distance = tan(fov)*depth/double(samples);
 
-        if ((current_pos - last_pos).norm() < pixel_distance) {
+        if (cv::norm(current_pos - last_pos) < pixel_distance) {
             return;
         }
         last_pos = current_pos;
@@ -115,25 +103,12 @@ public:
         auto max_range_iter = std::max_element(scan->ranges.begin(), scan->ranges.end());
         double min_range = sin(0.0)*scan->ranges[0];
         double max_range = sin(fov)*(*max_range_iter) - min_range;
-        
-        /*
-        cout << "=========" << endl;
-        cout << max_range << endl;
-        cout << min_range << endl;
-        cout << *max_intensity_iter << endl;
-        */
+
 
         size_t max_index = std::distance(scan->intensities.begin(), max_intensity_iter);
 
-        /*
-        int max_index = 0;
-        for (int i = 0; i < scan->intensities.size(); ++i) {
-            max_index = scan->intensities[i] > scan->intensities[max_index]? i : max_index; 
-        }
-        */
-
         double scale = 1.0; //255.0/max_index;
-        std::normal_distribution<double> noise_distribution(0.0, 3.0);
+        std::normal_distribution<double> noise_distribution(0.0, 10.0);
 
         // now we should move everything now one notch
         // let's just do the left for now, maybe synch later
@@ -141,28 +116,25 @@ public:
         waterfall_image(cv::Rect(0, 0, waterfall_image.cols, waterfall_image.rows-1)).copyTo(shifted(cv::Rect(0, 1, shifted.cols, shifted.rows-1)));
         shifted.copyTo(waterfall_image);
 
+		std::normal_distribution<double> shift_distribution(0.0, 1.0);
+		int noise_shift = int(shift_distribution(generator));
+
 		//if (angle_unknown) {
         int ray = 0;
         for (int i = 0; i < samples && ray < rays; ) {
             int index = is_left? width/2-offset-1-i : width/2+offset+i;
+			index += noise_shift;
             if ((sin(fov*ray/rays)*scan->ranges[ray] - min_range) > max_range*i/samples) {
                 ++i;
             }
             else {
-                //if (waterfall_image.at<uchar>(0, width/2-offset-1-i) == 0) {
-                double value = scale*scan->intensities[ray]; //+noise_distribution(generator);
-                waterfall_image.at<uchar>(0, index) = uchar(scale*scan->intensities[ray]); //uchar(std::max(0.0, std::min(255.0, value)));
-                //}
-                //++i;
+                double value = scale*scan->intensities[ray] + noise_distribution(generator);
+				if (index >= 0 && index < waterfall_image.cols) {
+				    waterfall_image.at<uchar>(0, index) = uchar(std::max(0.0, std::min(255.0, value)));
+				}
                 ++ray;
             }
         }
-		/*}
-		else {
-            for (int i = 0; i < samples; ++i) {
-                waterfall_image.at<uchar>(0, width/2-offset-1-i) = uchar(scale*scan->intensities[sample_indices(i)]);
-            }
-        }*/
 
         sensor_msgs::Image img_msg; // >> message to be sent
 
