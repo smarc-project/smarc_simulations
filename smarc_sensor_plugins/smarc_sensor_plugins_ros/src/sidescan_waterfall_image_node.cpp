@@ -2,12 +2,14 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Image.h>
 #include <smarc_gazebo_ros_plugins/SonarEntities.h>
+#include <tf/transform_listener.h>
 
 #include <opencv2/core.hpp>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
 #include <Eigen/Dense>
 #include <cmath>
+#include <random>
 
 using namespace std;
 
@@ -19,8 +21,10 @@ public:
     ros::Subscriber sonar_sub;
     ros::Subscriber entity_sub;
     ros::Publisher waterfall_pub;
+    tf::TransformListener listener;
 
     string auv_namespace;
+    string auv_frame;
     cv::Mat waterfall_image;
     int timesteps;
     double start_angle;
@@ -32,7 +36,10 @@ public:
     bool angle_unknown;
     bool is_left;
 
+    std::default_random_engine generator;
+
     //Eigen::VectorXi sample_indices;
+    Eigen::Vector3d last_pos;
 
     WaterfallImageNode()
     {
@@ -40,6 +47,7 @@ public:
         string auv_name;
         pn.param<string>("auv_name", auv_name, "small_smarc_auv");
         auv_namespace = string("/") + auv_name;
+        auv_frame = auv_name+"/base_link";
         pn.param<int>("timesteps", timesteps, 200);
         pn.param<double>("start_angle", start_angle, 0.0);
         pn.param<double>("fov", fov, 60.0);
@@ -57,6 +65,8 @@ public:
             side_name = "right";
         }
 
+        last_pos.setZero();
+
         // with start angle and fov, we should be able to decide the index of the samples to keep
         /*
         sample_indices.resize(samples);
@@ -70,8 +80,8 @@ public:
         cout << "Sample indices: " << sample_indices << endl;
         */
 
-        offset = 10;
-        width = 2*samples+2*width;
+        offset = 5;
+        width = 2*samples + 2*width;
         waterfall_image = cv::Mat::zeros(timesteps, width, CV_8UC1);
 
         waterfall_pub = n.advertise<sensor_msgs::Image>(auv_namespace+"/sss_"+side_name+"_waterfall", 1);
@@ -81,15 +91,37 @@ public:
 
     void sonar_callback(const sensor_msgs::LaserScan::ConstPtr& scan)
     {
+        tf::StampedTransform transform;
+        try {
+            listener.lookupTransform("/world", auv_frame,  
+                                     ros::Time(0), transform);
+        }
+        catch (tf::TransformException ex) {
+            ROS_ERROR("%s",ex.what());
+            ros::Duration(1.0).sleep();
+        }
+
+        auto min_range_iter = std::min_element(scan->ranges.begin(), scan->ranges.end());
+        double depth = double(*min_range_iter);
+        Eigen::Vector3d current_pos(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+        double pixel_distance = tan(fov)*depth/double(samples);
+
+        if ((current_pos - last_pos).norm() < pixel_distance) {
+            return;
+        }
+        last_pos = current_pos;
+
         auto max_intensity_iter = std::max_element(scan->intensities.begin(), scan->intensities.end());
         auto max_range_iter = std::max_element(scan->ranges.begin(), scan->ranges.end());
         double min_range = sin(0.0)*scan->ranges[0];
         double max_range = sin(fov)*(*max_range_iter) - min_range;
-
+        
+        /*
         cout << "=========" << endl;
         cout << max_range << endl;
         cout << min_range << endl;
         cout << *max_intensity_iter << endl;
+        */
 
         size_t max_index = std::distance(scan->intensities.begin(), max_intensity_iter);
 
@@ -101,6 +133,7 @@ public:
         */
 
         double scale = 1.0; //255.0/max_index;
+        std::normal_distribution<double> noise_distribution(0.0, 3.0);
 
         // now we should move everything now one notch
         // let's just do the left for now, maybe synch later
@@ -117,7 +150,8 @@ public:
             }
             else {
                 //if (waterfall_image.at<uchar>(0, width/2-offset-1-i) == 0) {
-                waterfall_image.at<uchar>(0, index) = uchar(scale*scan->intensities[ray]);
+                double value = scale*scan->intensities[ray]; //+noise_distribution(generator);
+                waterfall_image.at<uchar>(0, index) = uchar(scale*scan->intensities[ray]); //uchar(std::max(0.0, std::min(255.0, value)));
                 //}
                 //++i;
                 ++ray;
