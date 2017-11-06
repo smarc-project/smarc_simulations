@@ -1,0 +1,19 @@
+<launch>
+
+  <arg name="namespace" default="small_smarc_auv"/>
+
+  <node name="left_sidescan_waterfall_image_node" pkg="smarc_sensor_plugins_ros" type="sidescan_waterfall_image_node" output="screen">
+    <param name="auv_name" value="$(arg namespace)" />
+    <param name="is_left" value="true" />
+  </node>
+
+  <node name="right_sidescan_waterfall_image_node" pkg="smarc_sensor_plugins_ros" type="sidescan_waterfall_image_node" output="screen">
+    <param name="auv_name" value="$(arg namespace)" />
+    <param name="is_left" value="false" />
+  </node>
+
+  <node name="combine_waterfalls_node" pkg="smarc_sensor_plugins_ros" type="combine_waterfalls_node" output="screen">
+    <param name="auv_name" value="$(arg namespace)" />
+  </node>
+
+</launch>
