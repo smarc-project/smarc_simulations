@@ -13,6 +13,7 @@
         <arg name="headless" value="false"/>
         <arg name="debug" value="false"/>
         <arg name="verbose" value="true"/>
+		<arg name="extra_gazebo_args" value="-s libregister_underwater_sonar_sensor.so"/>
     </include>
 
     <node name="publish_world_models"
@@ -22,8 +23,8 @@
         <rosparam subst_value="true">
             meshes:
                 heightmap:
-                    mesh: package://uuv_descriptions/world_models/sand_heightmap/meshes/heightmap.dae
-                    model: sand_heightmap
+                    mesh: package://smarc_worlds/world_models/sand_heightmap_pipe/meshes/heightmap.dae
+                    model: sand_heightmap_pipe
                 seafloor:
                     plane: [2000, 2000, 0.1]
                     pose:
