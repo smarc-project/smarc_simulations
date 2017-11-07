@@ -19,17 +19,18 @@
     <static>true</static>
     <link name="link">
       <collision name="ground">
-        <pose>0 0 0 1.57 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh><uri>model://sand_heightmap_pipe/meshes/heightmap_pipe.dae</uri></mesh>
+          <mesh><uri>model://sand_heightmap_pipe/meshes/heightmap.dae</uri></mesh>
         </geometry>
+		<laser_retro>50</laser_retro>
       </collision>
 
       <visual name="ground_sand">
         <cast_shadows>true</cast_shadows>
-        <pose>0 0 0 1.57 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh><uri>model://sand_heightmap_pipe/meshes/heightmap_pipe.dae</uri></mesh>
+          <mesh><uri>model://sand_heightmap_pipe/meshes/heightmap.dae</uri></mesh>
         </geometry>
         <material>
           <script>
@@ -37,6 +38,7 @@
             <name>UUVSimulator/SandAndStones</name>
           </script>
         </material>
+		<laser_retro>50</laser_retro>
       </visual>
     </link>
   </model>
