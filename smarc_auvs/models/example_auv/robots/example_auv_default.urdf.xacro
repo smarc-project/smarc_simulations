@@ -14,13 +14,13 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<robot name="small_smarc_auv" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot name="example_auv" xmlns:xacro="http://www.ros.org/wiki/xacro" >
   <xacro:arg name="debug" default="0"/>
-  <xacro:arg name="namespace" default="small_smarc_auv"/>
+  <xacro:arg name="namespace" default="example_auv"/>
   <!-- Include the UUV macro file -->
-  <xacro:include filename="$(find smarc_auvs)/models/small_smarc_auv/urdf/small_smarc_auv_base.urdf.xacro"/>
+  <xacro:include filename="$(find smarc_auvs)/models/example_auv/urdf/example_auv_base.urdf.xacro"/>
   <!-- Create the romulus -->
-  <xacro:small_smarc_auv_base namespace="$(arg namespace)" debug="$(arg debug)"/>
+  <xacro:example_auv_base namespace="$(arg namespace)" debug="$(arg debug)"/>
 
   <!-- Joint state publisher plugin -->
   <gazebo>
