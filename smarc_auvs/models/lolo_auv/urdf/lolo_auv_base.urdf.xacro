@@ -30,10 +30,10 @@
   <xacro:property name="cob" value="0 0 0.0196"/>
   <xacro:property name="rho" value="1025.0"/>
 
-  <xacro:property name="visual_mesh_file" value="file://$(find smarc_auvs)/models/large_smarc_auv/mesh/lolo.dae"/>
-  <xacro:property name="prop_mesh_file" value="file://$(find smarc_auvs)/models/large_smarc_auv/mesh/propeller.dae"/>
-  <xacro:property name="fin_mesh_file" value="file://$(find smarc_auvs)/models/large_smarc_auv/mesh/fin.dae"/>
-  <xacro:property name="back_fin_mesh_file" value="file://$(find smarc_auvs)/models/large_smarc_auv/mesh/back_fin.dae"/>
+  <xacro:property name="visual_mesh_file" value="file://$(find smarc_auvs)/models/lolo_auv/mesh/lolo.dae"/>
+  <xacro:property name="prop_mesh_file" value="file://$(find smarc_auvs)/models/lolo_auv/mesh/propeller.dae"/>
+  <xacro:property name="fin_mesh_file" value="file://$(find smarc_auvs)/models/lolo_auv/mesh/fin.dae"/>
+  <xacro:property name="back_fin_mesh_file" value="file://$(find smarc_auvs)/models/lolo_auv/mesh/back_fin.dae"/>
 
   <!-- Fin snippet -->
   <xacro:macro name="fin_macro" params="namespace fin_id *origin">
@@ -117,7 +117,7 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:macro name="large_smarc_auv_base" params="namespace debug">
+  <xacro:macro name="lolo_auv_base" params="namespace debug">
     <link name="${namespace}/base_link">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>

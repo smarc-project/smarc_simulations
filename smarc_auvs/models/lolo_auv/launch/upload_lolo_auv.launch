@@ -9,12 +9,12 @@
   <arg name="yaw" default="0.0"/>
 
   <arg name="mode" default="default"/>
-  <arg name="namespace" default="large_smarc_auv"/>
+  <arg name="namespace" default="lolo_auv"/>
   <arg name="world_frame" default="world"/> <!-- This should actually be "/world". See https://github.com/ros-simulation/gazebo_ros_pkgs/pull/324 -->
 
   <group ns="$(arg namespace)">
     <param name="robot_description"
-           command="$(find xacro)/xacro.py '$(find smarc_auvs)/models/large_smarc_auv/robots/large_smarc_auv_$(arg mode).urdf.xacro' debug:=$(arg debug) namespace:=$(arg namespace)" />
+           command="$(find xacro)/xacro.py '$(find smarc_auvs)/models/lolo_auv/robots/lolo_auv_$(arg mode).urdf.xacro' debug:=$(arg debug) namespace:=$(arg namespace)" />
 
     <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
