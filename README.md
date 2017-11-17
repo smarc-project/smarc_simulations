@@ -56,3 +56,6 @@ Check `rostopic list` and try to control e.g. the fins.
 
 In rviz, you can get the camera image on `/small_smarc_auv/small_smarc_auv/camera/camera_image`
 and the left and right side scans on `small_smarc_auv/sss_left` and `small_smarc_auv/sss_right`, respectively.
+
+Rviz configs that display a lot of information for the different auvs are saved in the `smarc_auvs/rviz` folder.
+To use them, click `File > Open Config` in rviz and navigate to the `.rviz` file that you want to use.
