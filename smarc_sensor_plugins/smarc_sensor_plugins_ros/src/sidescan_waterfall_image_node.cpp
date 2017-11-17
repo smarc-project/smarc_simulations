@@ -72,6 +72,17 @@ public:
         width = 2*samples + 2*width;
         waterfall_image = cv::Mat::zeros(timesteps, width, CV_8UC1);
 
+		ROS_INFO("Waiting for transform...");
+		try {
+		    listener.waitForTransform("/world", auv_frame,
+		                              ros::Time(0), ros::Duration(60.0));
+		}
+		catch (tf::TransformException ex) {
+            ROS_ERROR("%s",ex.what());
+            ros::Duration(1.0).sleep();
+		}
+		ROS_INFO("Got transform...");
+
         waterfall_pub = n.advertise<sensor_msgs::Image>(auv_namespace+"/sss_"+side_name+"_waterfall", 1);
         sonar_sub = n.subscribe(auv_namespace+"/sss_"+side_name, 10, &WaterfallImageNode::sonar_callback, this);
         entity_sub = n.subscribe(auv_namespace+"/sss_"+side_name+"_entities", 10, &WaterfallImageNode::entities_callback, this);
