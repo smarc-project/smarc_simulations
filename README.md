@@ -35,14 +35,14 @@ roslaunch uuv_descriptions empty_underwater_world.launch
 ```
 Then we open a new tab and launch a simulation of the small smarc auv:
 ```
-roslaunch smarc_auvs upload_small_smarc_auv.launch
+roslaunch smarc_auvs upload_example_auv.launch
 ```
 
 ## Playing around
 
 You can fire the thruster of the AUV by running the following command, feed it a value between 0-100:
 ```
-rostopic pub /small_smarc_auv/thrusters/0/input uuv_gazebo_r_plugins_msgs/FloatStamped "header:
+rostopic pub /example_auv/thrusters/0/input uuv_gazebo_r_plugins_msgs/FloatStamped "header:
   seq: 0
   stamp:
     secs: 0
@@ -54,8 +54,8 @@ Check `rostopic list` and try to control e.g. the fins.
 
 ## Rviz
 
-In rviz, you can get the camera image on `/small_smarc_auv/small_smarc_auv/camera/camera_image`
-and the left and right side scans on `small_smarc_auv/sss_left` and `small_smarc_auv/sss_right`, respectively.
+In rviz, you can get the camera image on `/example_auv/example_auv/camera/camera_image`
+and the left and right side scans on `example_auv/sss_left` and `example_auv/sss_right`, respectively.
 
 Rviz configs that display a lot of information for the different auvs are saved in the `smarc_auvs/rviz` folder.
 To use them, click `File > Open Config` in rviz and navigate to the `.rviz` file that you want to use.
