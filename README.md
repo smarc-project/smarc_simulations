@@ -29,9 +29,9 @@ export GAZEBO_PLUGIN_PATH=${GAZEBO_PREFIX}/lib:${GAZEBO_PREFIX}/lib/x86_64-linux
 
 Open a new tab, don't forget to source your catkin workspace every time you do this.
 
-Then launch gazebo with an empty world using:
+Then launch gazebo with an pipeline world using:
 ```
-roslaunch uuv_descriptions empty_underwater_world.launch
+roslaunch smarc_worlds pipe_following.launch
 ```
 Then we open a new tab and launch a simulation of the small smarc auv:
 ```
