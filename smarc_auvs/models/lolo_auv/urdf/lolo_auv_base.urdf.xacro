@@ -404,7 +404,7 @@
         stddev="0.02"
         scale="0.5">
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="-0.375 0 -0.16" rpy="0 0.3 0"/>
+        <origin xyz="-0.375 0 -0.3" rpy="0 0.3 0"/>
     </xacro:regular_camera_plugin_macro>
 
 	<!-- Mount a camera behind the vehicle for steering -->

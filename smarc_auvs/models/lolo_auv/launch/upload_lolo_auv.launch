@@ -38,4 +38,8 @@
     </node>
   </group>
 
+  <include file="$(find smarc_sensor_plugins_ros)/launch/waterfall.launch">
+    <arg name="namespace" value="$(arg namespace)"/>
+  </include>
+
 </launch>
