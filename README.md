@@ -13,7 +13,7 @@ Compile it with `catkin_make`, followed by `catkin_make install`.
 
 Then install the following packages:
 ```
-sudo apt-get install ros-kinetic-ros-control ros-kinetic-gazebo-ros-control
+sudo apt-get install ros-kinetic-ros-control ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller
 ```
 
 ## Environment variables
