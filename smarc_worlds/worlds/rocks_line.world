@@ -80,9 +80,9 @@
       <box>
         <size>500 500 0.1</size>
       </box>
-      <model_count>250</model_count>
+      <model_count>100</model_count>
       <distribution>
-        <type>random</type>
+        <type>linear-x</type>
       </distribution>
     </population>
 	
