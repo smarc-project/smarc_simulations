@@ -2,11 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(smarc_gazebo_plugins)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 find_package(gazebo REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
+
 #find_package(OGRE REQUIRED)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -115,7 +117,7 @@ catkin_package(
                ${GAZEBO_INCLUDE_DIRS}
                ${GAZEBO_MSG_INCLUDE_DIRS}
                ${EIGEN3_INCLUDE_DIRS}
-  LIBRARIES underwater_sonar_sensor underwater_sonar_plugin
+  LIBRARIES underwater_sonar_sensor underwater_sonar_plugin population_intensities
   DEPENDS gazebo
 )
 
@@ -144,6 +146,10 @@ add_library(underwater_sonar_plugin
 
 add_library(register_underwater_sonar_sensor
   src/RegisterUnderwaterSonarSensor.cc
+)
+
+add_library(population_intensities
+  src/PopulationIntensities.cc
 )
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -184,6 +190,11 @@ target_link_libraries(register_underwater_sonar_sensor
   underwater_sonar_sensor
   ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
 )
+
+target_link_libraries(population_intensities
+    ${GAZEBO_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
@@ -204,6 +215,7 @@ install(TARGETS
   underwater_sonar_sensor
   underwater_sonar_plugin
   register_underwater_sonar_sensor
+  population_intensities
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
