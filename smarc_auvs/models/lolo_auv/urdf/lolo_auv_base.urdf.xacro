@@ -225,7 +225,7 @@
           <mesh filename="${prop_mesh_file}" scale="1 1 1"/>
         </geometry>
       </visual>
-      <collision> -->
+      <collision> 
         <!-- todo: gazebo needs a collision volume or it will ignore the pose of
            the joint that leads to this link (and assume it to be the identity) -->
         <geometry>
@@ -245,7 +245,7 @@
           <mesh filename="${prop_mesh_file}" scale="1 1 1"/>
         </geometry>
       </visual>
-      <collision> -->
+      <collision> 
         <!-- todo: gazebo needs a collision volume or it will ignore the pose of
            the joint that leads to this link (and assume it to be the identity) -->
         <geometry>
@@ -342,8 +342,8 @@
       parent_link="${namespace}/base_link"
       topic="sss_left"
       mass="0.015"
-      update_rate="10"
-      samples="120"
+      update_rate="30"
+      samples="102"
       fov="${pi/3.0}"
       range_min="1.0"
       range_max="200.0"
@@ -362,8 +362,8 @@
       parent_link="${namespace}/base_link"
       topic="sss_right"
       mass="0.015"
-      update_rate="10"
-      samples="100"
+      update_rate="30"
+      samples="102"
       fov="${pi/3.0}"
       range_min="1.0"
       range_max="200.0"
@@ -380,10 +380,10 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </xacro:default_rpt>  -->
 
-    <!-- Pressure
+    <!-- Pressure -->
     <xacro:default_pressure namespace="${namespace}" parent_link="${namespace}/base_link">
       <origin xyz="0 0 0" rpy="0 0 0"/>
-    </xacro:default_pressure>  -->
+    </xacro:default_pressure> 
 
     <!-- IMU  -->
     <xacro:default_imu namespace="${namespace}" parent_link="${namespace}/base_link">
