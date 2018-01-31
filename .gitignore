@@ -10,6 +10,3 @@
 
 # ROS bags
 *.bag
-
-# RVIZ config
-*.rviz
