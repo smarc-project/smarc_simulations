@@ -1,0 +1,15 @@
+*~
+*.pyc
+
+# Qt files
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+
+# ROS bags
+*.bag
+
+# auv models
+/smarc_auvs/models/*
