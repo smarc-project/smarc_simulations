@@ -18,7 +18,7 @@
   <xacro:arg name="debug" default="0"/>
   <xacro:arg name="namespace" default="example_auv"/>
   <!-- Include the UUV macro file -->
-  <xacro:include filename="$(find smarc_auvs)/models/example_auv/urdf/example_auv_base.urdf.xacro"/>
+  <xacro:include filename="$(find smarc_private_auvs)/models/example_auv/urdf/example_auv_base.urdf.xacro"/>
   <!-- Create the romulus -->
   <xacro:example_auv_base namespace="$(arg namespace)" debug="$(arg debug)"/>
 
