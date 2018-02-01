@@ -33,6 +33,9 @@ using namespace gazebo;
 using namespace common;
 using namespace physics;
 
+/////////////////////////////////////////////////
+// GZ_REGISTER_WORLD_PLUGIN(PopulationIntensities);
+
 //////////////////////////////////////////////////
 PopulationIntensities::PopulationIntensities(sdf::ElementPtr _sdf, boost::shared_ptr<World> _world)
   : dataPtr(new PopulationPrivateIntensities)
@@ -54,6 +57,7 @@ bool PopulationIntensities::PopulateAll()
 
   sdf::ElementPtr popElem = this->dataPtr->populationElem;
   bool result = true;
+  printf("Population intensities plugin started!");
 
   // Iterate through all the population elements in the sdf.
   while (popElem)
@@ -169,7 +173,7 @@ bool PopulationIntensities::ParseSdf(sdf::ElementPtr _population,
     return false;
 
   // Read the initial intensity
-  if (!this->ValueFromSdf(_population, "initial_intensity", _params.intensity))
+  if (!this->ValueFromSdf(_population, "laser_retro", _params.intensity))
     return false;
 
   // Read the distribution element.
