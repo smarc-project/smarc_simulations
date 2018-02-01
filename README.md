@@ -11,6 +11,11 @@ in https://github.com/uuvsimulator/uuv_simulator/wiki#using-uuv-simulator-with-r
 Then clone https://github.com/smarc-project/uuv_simulator.git in your catkin workspace.
 Compile it with `catkin_make`, followed by `catkin_make install`.
 
+Then install the following packages:
+```
+sudo apt-get install ros-kinetic-ros-control ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller
+```
+
 ## Environment variables
 
 Add the following lines to your `.bashrc`, replace `GAZEBO_PREFIX` to be the path to your catkin workspace.
@@ -29,20 +34,20 @@ export GAZEBO_PLUGIN_PATH=${GAZEBO_PREFIX}/lib:${GAZEBO_PREFIX}/lib/x86_64-linux
 
 Open a new tab, don't forget to source your catkin workspace every time you do this.
 
-Then launch gazebo with an empty world using:
+Then launch gazebo with an pipeline world using:
 ```
-roslaunch uuv_descriptions empty_underwater_world.launch
+roslaunch smarc_worlds pipe_following.launch
 ```
 Then we open a new tab and launch a simulation of the small smarc auv:
 ```
-roslaunch smarc_auvs upload_small_smarc_auv.launch
+roslaunch smarc_auvs upload_example_auv.launch
 ```
 
 ## Playing around
 
 You can fire the thruster of the AUV by running the following command, feed it a value between 0-100:
 ```
-rostopic pub /small_smarc_auv/thrusters/0/input uuv_gazebo_r_plugins_msgs/FloatStamped "header:
+rostopic pub /example_auv/thrusters/0/input uuv_gazebo_r_plugins_msgs/FloatStamped "header:
   seq: 0
   stamp:
     secs: 0
@@ -54,5 +59,8 @@ Check `rostopic list` and try to control e.g. the fins.
 
 ## Rviz
 
-In rviz, you can get the camera image on `/small_smarc_auv/small_smarc_auv/camera/camera_image`
-and the left and right side scans on `small_smarc_auv/sss_left` and `small_smarc_auv/sss_right`, respectively.
+In rviz, you can get the camera image on `/example_auv/example_auv/camera/camera_image`
+and the left and right side scans on `example_auv/sss_left` and `example_auv/sss_right`, respectively.
+
+Rviz configs that display a lot of information for the different auvs are saved in the `smarc_auvs/rviz` folder.
+To use them, click `File > Open Config` in rviz and navigate to the `.rviz` file that you want to use.

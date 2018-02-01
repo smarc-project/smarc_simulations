@@ -59,6 +59,7 @@ bool PopulationIntensities::PopulateAll()
   bool result = true;
   printf("Population intensities plugin started!");
 
+
   // Iterate through all the population elements in the sdf.
   while (popElem)
   {

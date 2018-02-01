@@ -67,7 +67,7 @@
       <pose>0 0 0 0 0 0</pose>
     </include>
 
-    <plugin name="rocks_population" filename="libpopulation_intensities.so">
+    <population name="rock_population1">
       <model name="large_rock1">
         <include>
           <static>true</static>
@@ -78,12 +78,11 @@
       <box>
         <size>2000 2000 0.1</size>
       </box>
-      <laser_retro>100</laser_retro>
       <model_count>100</model_count>
       <distribution>
         <type>random</type>
       </distribution>
-    </plugin>
+    </population>
 
     <plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
       <namespace>hydrodynamics</namespace>
