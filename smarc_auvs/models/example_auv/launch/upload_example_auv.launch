@@ -10,7 +10,7 @@
 
   <arg name="mode" default="default"/>
   <arg name="namespace" default="example_auv"/>
-  <arg name="world_frame" default="world"/> <!-- This should actually be "/world". See https://github.com/ros-simulation/gazebo_ros_pkgs/pull/324 -->
+  <!-- <arg name="world_frame" default="world"/> This should actually be "/world". See https://github.com/ros-simulation/gazebo_ros_pkgs/pull/324 -->
 
   <group ns="$(arg namespace)">
     <param name="robot_description"
