@@ -226,6 +226,14 @@
       </link>
       <pose frame=''>-61.2048 65.1001 0 0 -0 0</pose>
     </model>
+
+    <!-- Dummy laser -->
+    <include>
+      <uri>model://dummy_laser</uri>
+      <pose>0 0 0 0 0 0</pose>
+      <name>dummy_laser</name>
+    </include>
+
     <state world_name='lake'>
       <sim_time>360 764000000</sim_time>
       <real_time>361 148401894</real_time>

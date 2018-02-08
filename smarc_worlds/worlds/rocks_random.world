@@ -84,6 +84,13 @@
       </distribution>
     </population>
 
+    <!-- Dummy laser -->
+    <include>
+      <uri>model://dummy_laser</uri>
+      <pose>0 0 0 0 0 0</pose>
+      <name>dummy_laser</name>
+    </include>
+
     <plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
       <namespace>hydrodynamics</namespace>
       <constant_current>
