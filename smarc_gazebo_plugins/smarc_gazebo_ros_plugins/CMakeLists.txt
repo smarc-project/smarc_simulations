@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(smarc_gazebo_ros_plugins)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /usr/share/OGRE/cmake/modules)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,10 +15,14 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   roscpp
   visualization_msgs
+  cv_bridge
+  gazebo_plugins
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(OGRE REQUIRED)
 find_package(gazebo REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -109,7 +114,7 @@ catkin_package(
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
   ${GAZEBO_MSG_INCLUDE_DIRS}
- LIBRARIES underwater_sonar_ros_plugin
+ LIBRARIES underwater_sonar_ros_plugin underwater_sonar_ray_ros_plugin image_sonar_ros_plugin
  CATKIN_DEPENDS smarc_gazebo_plugins
   sensor_msgs
   geometry_msgs
@@ -128,6 +133,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
   ${GAZEBO_MSG_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -138,11 +144,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 ## Declare a C++ library
 add_library(underwater_sonar_ros_plugin src/gazebo_ros_underwater_sonar.cpp)
+add_library(underwater_sonar_ray_ros_plugin src/gazebo_ros_underwater_sonar_ray.cpp)
+add_library(image_sonar_ros_plugin src/gazebo_ros_image_sonar.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 add_dependencies(underwater_sonar_ros_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(underwater_sonar_ray_ros_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_sonar_ros_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -164,6 +174,15 @@ target_link_libraries(underwater_sonar_ros_plugin
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(underwater_sonar_ray_ros_plugin
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(image_sonar_ros_plugin
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  ${OGRE_LIBRARIES}
+)
 #############
 ## Install ##
 #############
@@ -179,7 +198,7 @@ target_link_libraries(underwater_sonar_ros_plugin
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS underwater_sonar_ros_plugin
+install(TARGETS underwater_sonar_ros_plugin underwater_sonar_ray_ros_plugin image_sonar_ros_plugin
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
