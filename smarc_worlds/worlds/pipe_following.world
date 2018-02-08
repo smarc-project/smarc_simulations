@@ -80,7 +80,14 @@
       <name>pipeline</name>
     </include>
 
-    <plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
+    <!-- Dummy laser -->
+    <include>
+      <uri>model://dummy_laser</uri>
+      <pose>0 0 0 0 0 0</pose>
+      <name>dummy_laser</name>
+    </include>
+	
+	<plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
       <namespace>hydrodynamics</namespace>
       <constant_current>
         <topic>current_velocity</topic>
@@ -108,7 +115,7 @@
           <noiseAmp>0.0</noiseAmp>
         </vertical_angle>
       </constant_current>
-    </plugin>
+	</plugin>
 
     <gui fullscreen='0'>
       <camera name='user_camera'>
