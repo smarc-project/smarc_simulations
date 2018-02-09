@@ -100,6 +100,7 @@ namespace gazebo
     private: void ComputeSonarImage(const float *_src);
 	private: cv::Mat ComputeNormalImage(cv::Mat& depth);
 	private: cv::Mat ConstructSonarImage(cv::Mat& depth, cv::Mat& normals);
+    private: cv::Mat ConstructScanImage(cv::Mat& depth, cv::Mat& SNR);
 
     /// \brief Keep track of number of connctions for point clouds
     private: int point_cloud_connect_count_;
@@ -114,6 +115,8 @@ namespace gazebo
     private: void NormalImageDisconnect();
     private: void MultibeamImageConnect();
     private: void MultibeamImageDisconnect();
+    private: void SonarImageConnect();
+    private: void SonarImageDisconnect();
     private: common::Time last_depth_image_camera_info_update_time_;
 
     private: bool FillPointCloudHelper(sensor_msgs::PointCloud2 &point_cloud_msg,
@@ -129,12 +132,14 @@ namespace gazebo
     private: ros::Publisher depth_image_pub_;
     private: ros::Publisher normal_image_pub_;
     private: ros::Publisher multibeam_image_pub_;
+    private: ros::Publisher sonar_image_pub_;
 
     /// \brief PointCloud2 point cloud message
     private: sensor_msgs::PointCloud2 point_cloud_msg_;
     private: sensor_msgs::Image depth_image_msg_;
     private: sensor_msgs::Image normal_image_msg_;
     private: sensor_msgs::Image multibeam_image_msg_;
+    private: sensor_msgs::Image sonar_image_msg_;
 
     private: double point_cloud_cutoff_;
 
