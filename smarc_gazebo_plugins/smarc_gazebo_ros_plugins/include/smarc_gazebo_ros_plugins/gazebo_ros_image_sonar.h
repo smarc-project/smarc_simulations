@@ -55,6 +55,8 @@
 // camera stuff
 #include <gazebo_plugins/gazebo_ros_camera_utils.h>
 
+#include <opencv2/core.hpp>
+
 namespace gazebo
 {
   class GazeboRosImageSonar : public SensorPlugin, GazeboRosCameraUtils
@@ -96,6 +98,8 @@ namespace gazebo
 
     /// \brief push depth image data into ros topic
     private: void ComputeSonarImage(const float *_src);
+	private: cv::Mat ComputeNormalImage(cv::Mat& depth);
+    private: void ConstructSonarImage(cv::Mat& depth, cv::Mat& normals);
 
     /// \brief Keep track of number of connctions for point clouds
     private: int point_cloud_connect_count_;
@@ -106,6 +110,8 @@ namespace gazebo
     private: int depth_image_connect_count_;
     private: void DepthImageConnect();
     private: void DepthImageDisconnect();
+    private: void NormalImageConnect();
+    private: void NormalImageDisconnect();
     private: common::Time last_depth_image_camera_info_update_time_;
 
     private: bool FillPointCloudHelper(sensor_msgs::PointCloud2 &point_cloud_msg,
@@ -119,10 +125,12 @@ namespace gazebo
     /// \brief A pointer to the ROS node.  A node will be instantiated if it does not exist.
     private: ros::Publisher point_cloud_pub_;
     private: ros::Publisher depth_image_pub_;
+    private: ros::Publisher normal_image_pub_;
 
     /// \brief PointCloud2 point cloud message
     private: sensor_msgs::PointCloud2 point_cloud_msg_;
     private: sensor_msgs::Image depth_image_msg_;
+    private: sensor_msgs::Image normal_image_msg_;
 
     private: double point_cloud_cutoff_;
 

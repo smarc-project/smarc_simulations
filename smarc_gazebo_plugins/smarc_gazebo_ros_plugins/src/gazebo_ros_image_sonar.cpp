@@ -35,9 +35,9 @@
 
 #include <tf/tf.h>
 
-#include <opencv2/core.hpp>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
+#include <opencv2/core/core.hpp>
 
 namespace gazebo
 {
@@ -167,6 +167,14 @@ void GazeboRosImageSonar::Advertise()
       ros::VoidPtr(), &this->camera_queue_);
   this->depth_image_pub_ = this->rosnode_->advertise(depth_image_ao);
 
+  ros::AdvertiseOptions normal_image_ao =
+    ros::AdvertiseOptions::create< sensor_msgs::Image >(
+      this->depth_image_topic_name_+"_normals",1,
+      boost::bind( &GazeboRosImageSonar::NormalImageConnect,this),
+      boost::bind( &GazeboRosImageSonar::NormalImageDisconnect,this),
+      ros::VoidPtr(), &this->camera_queue_);
+  this->normal_image_pub_ = this->rosnode_->advertise(normal_image_ao);
+
   ros::AdvertiseOptions depth_image_camera_info_ao =
     ros::AdvertiseOptions::create<sensor_msgs::CameraInfo>(
         this->depth_image_camera_info_topic_name_,1,
@@ -205,6 +213,20 @@ void GazeboRosImageSonar::DepthImageConnect()
 ////////////////////////////////////////////////////////////////////////////////
 // Decrement count
 void GazeboRosImageSonar::DepthImageDisconnect()
+{
+  this->depth_image_connect_count_--;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Increment count
+void GazeboRosImageSonar::NormalImageConnect()
+{
+  this->depth_image_connect_count_++;
+  this->parentSensor->SetActive(true);
+}
+////////////////////////////////////////////////////////////////////////////////
+// Decrement count
+void GazeboRosImageSonar::NormalImageDisconnect()
 {
   this->depth_image_connect_count_--;
 }
@@ -525,31 +547,79 @@ bool GazeboRosImageSonar::FillDepthImageHelper(
   return true;
 }
 
-/*
-void GazeboRosImageSonar::ComputeNormalImage(cv::Mat depth)
+cv::Mat GazeboRosImageSonar::ComputeNormalImage(cv::Mat& depth)
 {
-  if(depth.type() != CV_32FC1) {
-    depth.convertTo(depth, CV_32FC1);
-  }
+  
+  // copy data into image
+  this->normal_image_msg_.header.frame_id = this->frame_name_;
+  this->normal_image_msg_.header.stamp.sec = this->depth_sensor_update_time_.sec;
+  this->normal_image_msg_.header.stamp.nsec = this->depth_sensor_update_time_.nsec;
 
   // filters
-  cv::Mat_<float> f1 = (Mat_<float>(3, 3) << 1,  2,  1,
-                                           0,  0,  0,
-                                          -1, -2, -1) / 8;
+  cv::Mat_<float> f1 = (cv::Mat_<float>(3, 3) << 1,  2,  1,
+                                                 0,  0,  0,
+                                                -1, -2, -1) / 8;
 
-  cv::Mat_<float> f2 = (Mat_<float>(3, 3) << 1, 0, -1,
-                                             2, 0, -2,
-                                             1, 0, -1) / 8;
-
+  cv::Mat_<float> f2 = (cv::Mat_<float>(3, 3) << 1, 0, -1,
+                                                 2, 0, -2,
+                                                 1, 0, -1) / 8;
 
   cv::Mat f1m, f2m;
   cv::flip(f1, f1m, 0);
   cv::flip(f2, f2m, 1);
 
   cv::Mat n1, n2;
-  filter2D(depth, n1, -1, f1m, Point(-1, -1), 0 ...);
+  cv::filter2D(depth, n1, -1, f1m, cv::Point(-1, -1), 0, cv::BORDER_REPLICATE);
+  cv::filter2D(depth, n2, -1, f2m, cv::Point(-1, -1), 0, cv::BORDER_REPLICATE);
+
+  cv::Mat no_readings;
+  cv::dilate(depth == 0, no_readings, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+  n1.setTo(0, no_readings);
+  n2.setTo(0, no_readings);
+
+  std::vector<cv::Mat> images(3);
+  cv::Mat white = cv::Mat::ones(depth.rows, depth.cols, CV_32FC1);
+
+  images.at(0) = n1;    //for green channel
+  images.at(1) = n2;    //for red channel
+  images.at(2) = 1./this->focal_length_*depth; //for blue channel
+
+  cv::Mat normal_image; // = cv::Mat::zeros(depth.rows, depth.cols, CV_32FC3);
+  cv::merge(images, normal_image);
+ 
+  // TODO: we should do this on the split images instead
+  for (int i = 0; i < normal_image.rows; ++i) {
+    for (int j = 0; j < normal_image.cols; ++j) {
+      cv::Vec3f& n = normal_image.at<cv::Vec3f>(i, j);
+	  n = cv::normalize(n);
+   }
+  }
+
+  cv::split(normal_image.clone(), images);
+  cv::Vec3d minVec, maxVec;
+  for (int i = 0; i < 3; ++i) {
+    cv::minMaxLoc(images[i], &minVec[i], &maxVec[i]);
+	images[i] -= minVec[i];
+	images[i] *= 1./(maxVec[i] - minVec[i]);
+  }
+
+  cv::merge(images, normal_image);
+  cv::Mat normal_image8;
+  normal_image.convertTo(normal_image8, CV_8UC3, 255.0);
+
+  cv_bridge::CvImage img_bridge;
+  img_bridge = cv_bridge::CvImage(this->normal_image_msg_.header, sensor_msgs::image_encodings::RGB8, normal_image8);
+  img_bridge.toImageMsg(this->normal_image_msg_); // from cv_bridge to sensor_msgs::Image
+
+  this->normal_image_pub_.publish(this->normal_image_msg_);
+
+  return normal_image;
 }
-*/
+
+void GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normals)
+{
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Put depth image data to the interface
@@ -565,9 +635,6 @@ void GazeboRosImageSonar::ComputeSonarImage(const float *_src)
   int rows_arg = this->height;
   int cols_arg = this->width;
   int step_arg = this->skip_;
-    //sensor_msgs::Image& image_msg,
-    //uint32_t rows_arg, uint32_t cols_arg,
-    //uint32_t step_arg, void* data_arg)
 
   sensor_msgs::Image image_msg;
   image_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
@@ -577,37 +644,19 @@ void GazeboRosImageSonar::ComputeSonarImage(const float *_src)
   image_msg.data.resize(rows_arg * cols_arg * sizeof(float));
   image_msg.is_bigendian = 0;
 
-  //const float bad_point = std::numeric_limits<float>::quiet_NaN();
-
-  cv::Mat depth_image = cv::Mat(rows_arg, cols_arg, CV_32FC1, (float*)_src).clone();
+  //cv::Mat depth_image = cv::Mat(rows_arg, cols_arg, CV_32FC1, (float*)_src).clone();
+  cv::Mat depth_image(rows_arg, cols_arg, CV_32FC1, (float*)_src);
   
-  /*
-  float* dest = (float*)(&(image_msg.data[0]));
-  int index = 0;
-
-  // convert depth to point cloud
-  for (uint32_t j = 0; j < rows_arg; j++)
-  {
-    for (uint32_t i = 0; i < cols_arg; i++)
-    {
-      float depth = _src[index++];
-
-      if (depth > this->point_cloud_cutoff_)
-      {
-        dest[i + j * cols_arg] = depth;
-      }
-      else //point in the unseeable range
-      {
-        dest[i + j * cols_arg] = bad_point;
-      }
-    }
-  }
-  */
+  // publish normal image
+  cv::Mat normal_image = this->ComputeNormalImage(depth_image);
+  this->ConstructSonarImage(depth_image, normal_image);
+  
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->depth_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, depth_image);
   img_bridge.toImageMsg(this->depth_image_msg_); // from cv_bridge to sensor_msgs::Image
 
   this->depth_image_pub_.publish(this->depth_image_msg_);
+
 
   this->lock_.unlock();
 }
