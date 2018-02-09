@@ -175,6 +175,14 @@ void GazeboRosImageSonar::Advertise()
       ros::VoidPtr(), &this->camera_queue_);
   this->normal_image_pub_ = this->rosnode_->advertise(normal_image_ao);
 
+  ros::AdvertiseOptions multibeam_image_ao =
+    ros::AdvertiseOptions::create< sensor_msgs::Image >(
+      this->depth_image_topic_name_+"_multibeam",1,
+      boost::bind( &GazeboRosImageSonar::MultibeamImageConnect,this),
+      boost::bind( &GazeboRosImageSonar::MultibeamImageDisconnect,this),
+      ros::VoidPtr(), &this->camera_queue_);
+  this->multibeam_image_pub_ = this->rosnode_->advertise(multibeam_image_ao);
+
   ros::AdvertiseOptions depth_image_camera_info_ao =
     ros::AdvertiseOptions::create<sensor_msgs::CameraInfo>(
         this->depth_image_camera_info_topic_name_,1,
@@ -227,6 +235,20 @@ void GazeboRosImageSonar::NormalImageConnect()
 ////////////////////////////////////////////////////////////////////////////////
 // Decrement count
 void GazeboRosImageSonar::NormalImageDisconnect()
+{
+  this->depth_image_connect_count_--;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Increment count
+void GazeboRosImageSonar::MultibeamImageConnect()
+{
+  this->depth_image_connect_count_++;
+  this->parentSensor->SetActive(true);
+}
+////////////////////////////////////////////////////////////////////////////////
+// Decrement count
+void GazeboRosImageSonar::MultibeamImageDisconnect()
 {
   this->depth_image_connect_count_--;
 }
@@ -580,6 +602,8 @@ cv::Mat GazeboRosImageSonar::ComputeNormalImage(cv::Mat& depth)
   std::vector<cv::Mat> images(3);
   cv::Mat white = cv::Mat::ones(depth.rows, depth.cols, CV_32FC1);
 
+  // NOTE: with different focal lengths, the expression becomes
+  // (-dzx*fy, -dzy*fx, fx*fy)
   images.at(0) = n1;    //for green channel
   images.at(1) = n2;    //for red channel
   images.at(2) = 1./this->focal_length_*depth; //for blue channel
@@ -616,9 +640,37 @@ cv::Mat GazeboRosImageSonar::ComputeNormalImage(cv::Mat& depth)
   return normal_image;
 }
 
-void GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normals)
+cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normals)
 {
+  std::vector<cv::Mat> images(3);
+  cv::split(normals, images);
 
+  float intensity = 100.; // target strength
+  float SL = 200.; // source level
+  float NL = 30; // noise level
+  float DI = 0.0; // directivity index 
+
+  // TODO: make these into proper parameters
+  cv::Mat TS = intensity*images[2]; // target strength, probably dir should be DI
+  cv::Mat TL = 0.5*depth; // transmission loss
+  cv::Mat SNR = SL - 2.0*TL - (NL-DI) + TS;
+  SNR.setTo(0., SNR < 0.);
+
+  double minVal, maxVal;
+  cv::minMaxLoc(SNR, &minVal, &maxVal);
+  SNR -= minVal;
+  SNR *= 1./(maxVal - minVal);
+
+  cv::Mat sonar_image8;
+  SNR.convertTo(sonar_image8, CV_8UC3, 255.0);
+
+  cv_bridge::CvImage img_bridge;
+  img_bridge = cv_bridge::CvImage(this->multibeam_image_msg_.header, sensor_msgs::image_encodings::MONO8, sonar_image8);
+  img_bridge.toImageMsg(this->multibeam_image_msg_); // from cv_bridge to sensor_msgs::Image
+
+  this->multibeam_image_pub_.publish(this->multibeam_image_msg_);
+
+  return SNR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
