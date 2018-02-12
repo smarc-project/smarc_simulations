@@ -692,7 +692,7 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
   this->multibeam_image_pub_.publish(this->multibeam_image_msg_);
 
-  return sonar_image8;
+  return SNR; //sonar_image8;
 }
 
 cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
@@ -705,7 +705,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
   cv::Point center(scan.cols/2, scan.rows);
   cv::Size axes(scan.rows, scan.rows);
-  cv::ellipse(scan, center, axes, -M_PI/2., -90-fov/2., -90+fov/2., black, -1); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
 
   float mapped_range = float(scan.rows);
   float range = float(10.);
@@ -713,7 +713,8 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   for (int i = 0; i < depth.rows; ++i) {
     for (int j = 0; j < depth.cols; ++j) {
       float d = depth.at<float>(i, j);
-	  uchar a = SNR.at<uchar>(i, j);
+	  //uchar a = SNR.at<uchar>(i, j);
+      float a = SNR.at<float>(i, j);
 	  if (d == 0 || a == 0) {
 		continue;
       }
@@ -725,11 +726,34 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 	  int pj = scan.cols/2 + int(x/range*mapped_range);
 
 	  if (pi < scan.rows && pi > 0 && pj < scan.cols && pj > 0 && x*x + z*z < range*range) {
-	    scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(a, a, a);
+	    //scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(a, a, a);
+        if (a < 0.8) {
+		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255*1.25*a, 255*0.78*a, 255*0.50*a);
+		}
+		else if(a < 1.) {
+		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255*a, 255*(1.88*a-0.88), 255*(-1.99*a+1.99));
+		}
+		else {
+		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255, 255*(1.88-0.88), 255*(-1.99+1.99));
+		}
 	  }
 
    }
   }
+  
+  cv::Scalar white(255, 255, 255);
+  cv::Size axes1(2./3.*scan.rows, 2./3.*scan.rows);
+  cv::Size axes2(1./3.*scan.rows, 1./3.*scan.rows);
+  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
+
+  int cornerx = int(mapped_range*sin(M_PI/180.*fov/2));
+  int cornery = int(mapped_range*cos(M_PI/180.*fov/2));
+  cv::Point left_corner(scan.cols/2-cornerx, scan.rows-cornery); 
+  cv::Point right_corner(scan.cols/2+cornerx, scan.rows-cornery); 
+  cv::line(scan, center, left_corner, white, 2);
+  cv::line(scan, center, right_corner, white, 2);
   
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->sonar_image_msg_.header, sensor_msgs::image_encodings::RGB8, scan);
