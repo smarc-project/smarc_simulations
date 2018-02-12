@@ -144,6 +144,14 @@ void GazeboRosImageSonar::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     this->point_cloud_cutoff_ = 0.4;
   else
     this->point_cloud_cutoff_ = _sdf->GetElement("pointCloudCutoff")->Get<double>();
+  
+  if (!_sdf->HasElement("clip")) {
+    gzerr << "We do not have clip" << std::endl;
+  }
+  else {
+    gzerr << "We do have clip" << std::endl;
+	gzerr << _sdf->GetElement("clip")->GetElement("far")->Get<double>() << std::endl;
+  }
 
   load_connection_ = GazeboRosCameraUtils::OnLoad(boost::bind(&GazeboRosImageSonar::Advertise, this));
   GazeboRosCameraUtils::Load(_parent, _sdf);
@@ -617,7 +625,8 @@ cv::Mat GazeboRosImageSonar::ComputeNormalImage(cv::Mat& depth)
   cv::filter2D(depth, n2, -1, f2m, cv::Point(-1, -1), 0, cv::BORDER_REPLICATE);
 
   cv::Mat no_readings;
-  cv::dilate(depth == 0, no_readings, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+  cv::erode(depth == 0, no_readings, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+  //cv::dilate(no_readings, no_readings, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
   n1.setTo(0, no_readings);
   n2.setTo(0, no_readings);
 
@@ -702,13 +711,14 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   cv::Scalar black(0, 0, 0);
   cv::Mat scan(400, 800, CV_8UC3);
   scan.setTo(blue);
-  float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
+  //float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
+  float fov = depthCamera->HFOV().Degree();
   cv::Point center(scan.cols/2, scan.rows);
   cv::Size axes(scan.rows, scan.rows);
   cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
 
   float mapped_range = float(scan.rows);
-  float range = float(10.);
+  float range = float(17.);
   
   for (int i = 0; i < depth.rows; ++i) {
     for (int j = 0; j < depth.cols; ++j) {
@@ -744,16 +754,21 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   cv::Scalar white(255, 255, 255);
   cv::Size axes1(2./3.*scan.rows, 2./3.*scan.rows);
   cv::Size axes2(1./3.*scan.rows, 1./3.*scan.rows);
-  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
-  cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
-  cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 2); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
 
-  int cornerx = int(mapped_range*sin(M_PI/180.*fov/2));
-  int cornery = int(mapped_range*cos(M_PI/180.*fov/2));
-  cv::Point left_corner(scan.cols/2-cornerx, scan.rows-cornery); 
-  cv::Point right_corner(scan.cols/2+cornerx, scan.rows-cornery); 
-  cv::line(scan, center, left_corner, white, 2);
-  cv::line(scan, center, right_corner, white, 2);
+  for (int i = 0; i < 5; ++i) {
+    float angle = -fov/2. + fov*i/float(5-1);
+    int cornerx = int(mapped_range*sin(M_PI/180.*angle));
+    int cornery = int(mapped_range*cos(M_PI/180.*angle));
+    //cv::Point left_corner(scan.cols/2-cornerx, scan.rows-cornery); 
+    //cv::Point right_corner(scan.cols/2+cornerx, scan.rows-cornery); 
+    cv::Point corner(scan.cols/2+cornerx, scan.rows-cornery); 
+    //cv::line(scan, center, left_corner, white, 2);
+    //cv::line(scan, center, right_corner, white, 2);
+    cv::line(scan, center, corner, white, 1);
+  }
   
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->sonar_image_msg_.header, sensor_msgs::image_encodings::RGB8, scan);
