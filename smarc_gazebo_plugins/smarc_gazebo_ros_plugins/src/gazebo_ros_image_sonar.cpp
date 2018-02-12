@@ -683,7 +683,7 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
   // TODO: make these into proper parameters
   cv::Mat TS = intensity*images[2]; // target strength, probably dir should be DI
-  cv::Mat TL = 0.5*depth; // transmission loss
+  cv::Mat TL = 5*depth; // transmission loss
   cv::Mat SNR = SL - 2.0*TL - (NL-DI) + TS;
   SNR.setTo(0., SNR < 0.);
 
@@ -706,19 +706,23 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
 cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 {
+  int rows = 400; // TODO: add a parameter for this
+  float range = 17.; // TODO: get this from the sensor config instead
+  
+  float fov = depthCamera->HFOV().Degree();
+  int cols = 2*int(float(rows)*sin(M_PI/180.*fov/2.))+20;
 
-  cv::Scalar blue(0, 0, 255);
+  cv::Scalar blue(15, 48, 102);
   cv::Scalar black(0, 0, 0);
-  cv::Mat scan(400, 800, CV_8UC3);
+  cv::Mat scan(rows, cols, CV_8UC3);
   scan.setTo(blue);
   //float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
-  float fov = depthCamera->HFOV().Degree();
+
   cv::Point center(scan.cols/2, scan.rows);
   cv::Size axes(scan.rows, scan.rows);
   cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
 
   float mapped_range = float(scan.rows);
-  float range = float(17.);
   
   for (int i = 0; i < depth.rows; ++i) {
     for (int j = 0; j < depth.cols; ++j) {
@@ -728,9 +732,17 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 	  if (d == 0 || a == 0) {
 		continue;
       }
-	  float x = d*(float(j) - this->cx_)/this->focal_length_;
-	  float y = d*(float(i) - this->cy_)/this->focal_length_;
-	  float z = d;
+	  float x = (float(j) - this->cx_)/this->focal_length_;
+	  float y = (float(i) - this->cy_)/this->focal_length_;
+	  float z = 1.;
+
+	  if (false) {
+		z = d;
+      }
+	  else {
+		z = d*sqrt(y*y + z*z);
+      }
+      x *= z; y *= z;
 
 	  int pi = scan.rows - 1 - int(z/range*mapped_range);
 	  int pj = scan.cols/2 + int(x/range*mapped_range);
@@ -754,9 +766,9 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   cv::Scalar white(255, 255, 255);
   cv::Size axes1(2./3.*scan.rows, 2./3.*scan.rows);
   cv::Size axes2(1./3.*scan.rows, 1./3.*scan.rows);
-  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
-  cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
-  cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 1); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
 
   for (int i = 0; i < 5; ++i) {
     float angle = -fov/2. + fov*i/float(5-1);
@@ -767,7 +779,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
     cv::Point corner(scan.cols/2+cornerx, scan.rows-cornery); 
     //cv::line(scan, center, left_corner, white, 2);
     //cv::line(scan, center, right_corner, white, 2);
-    cv::line(scan, center, corner, white, 1);
+    cv::line(scan, center, corner, white, 1, CV_AA);
   }
   
   cv_bridge::CvImage img_bridge;
