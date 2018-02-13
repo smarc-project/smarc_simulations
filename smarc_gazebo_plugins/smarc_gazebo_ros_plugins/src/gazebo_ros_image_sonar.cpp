@@ -706,7 +706,18 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
 void GazeboRosImageSonar::ApplySpeckleNoise(cv::Mat& scan, float fov)
 {
+  std::normal_distribution<double> speckle_dist(1.0, 0.3);
 
+  for (int i = 0; i < scan.rows; ++i) {
+    for (int j = 0; j < scan.cols; ++j) {
+      float& a = scan.at<float>(i, j);
+      if (a == 0.) {
+		continue;
+      }
+	  float speckle = fmax(speckle_dist(generator), 0.);
+      a *= speckle;
+	}
+  }
 }
 
 void GazeboRosImageSonar::ApplySmoothing(cv::Mat& scan, float fov)
@@ -775,6 +786,11 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 
   cv::Mat scan = cv::Mat::zeros(rows, cols, CV_32FC1);
   //float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
+  cv::Point center(scan.cols/2, scan.rows);
+  cv::Size full_axes(scan.rows, scan.rows);
+  cv::ellipse(scan, center, full_axes, -90, -fov/2., fov/2., 0.2, -1);
+  cv::Size third_axes(scan.rows/3, scan.rows/3);
+  cv::ellipse(scan, center, third_axes, -90, -fov/2., fov/2., 0, -1);
 
   float mapped_range = float(scan.rows);
   
