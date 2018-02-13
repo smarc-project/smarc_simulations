@@ -679,11 +679,27 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
   float intensity = 100.; // target strength
   float SL = 200.; // source level
   float NL = 30; // noise level
-  float DI = 0.0; // directivity index 
+  float DI = 0.0; // directivity index
+
+
+  std::vector<float> t_x, t_y;
+  for (int i = 0; i < depth.cols; i++) t_x.push_back((float(i) - this->cx_)/this->focal_length_);
+  for (int i = 0; i < depth.rows; i++) t_y.push_back((float(i) - this->cy_)/this->focal_length_);
+  cv::Mat X, Y;
+  cv::repeat(cv::Mat(t_x).reshape(1,1), t_y.size(), 1, X);
+  cv::repeat(cv::Mat(t_y).reshape(1,1).t(), 1, t_x.size(), Y);
+  cv::Mat dist(depth.rows, depth.cols, CV_32FC1);
+
+  cv::multiply(X, X, X);
+  cv::multiply(Y, Y, Y);
+
+  //gzerr << "X rows: " << X.rows << " X cols: " << X.cols << " Y rows: " << Y.rows << " Y cols: " << Y.cols << std::endl;
+  cv::sqrt(X + Y + 1, dist);
 
   // TODO: make these into proper parameters
   cv::Mat TS = intensity*images[2]; // target strength, probably dir should be DI
   cv::Mat TL = 5*depth; // transmission loss
+  cv::multiply(TL, dist, TL);
   cv::Mat SNR = SL - 2.0*TL - (NL-DI) + TS;
   SNR.setTo(0., SNR < 0.);
 
@@ -745,6 +761,9 @@ void GazeboRosImageSonar::ApplySmoothing(cv::Mat& scan, float fov)
 
   std::discrete_distribution<> range_dist(nbr_indices.begin(), nbr_indices.end());
   std::uniform_real_distribution<double> index_dist(0.0, 1.0);
+
+
+  std::binomial_distribution<int> distribution(window_size, 0.5);
 
   for (int i = 0; i < nrolls; ++i) {
     int sampled_range = range_dist(generator);
