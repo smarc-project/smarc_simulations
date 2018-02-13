@@ -101,6 +101,9 @@ namespace gazebo
 	private: cv::Mat ComputeNormalImage(cv::Mat& depth);
 	private: cv::Mat ConstructSonarImage(cv::Mat& depth, cv::Mat& normals);
     private: cv::Mat ConstructScanImage(cv::Mat& depth, cv::Mat& SNR);
+    private: void ApplySpeckleNoise(cv::Mat& scan, float fov);
+    private: void ApplySmoothing(cv::Mat& scan, float fov);
+    private: cv::Mat ConstructVisualScanImage(cv::Mat& raw_scan);
 
     /// \brief Keep track of number of connctions for point clouds
     private: int point_cloud_connect_count_;
@@ -145,6 +148,7 @@ namespace gazebo
 
     /// \brief ROS image topic name
     private: std::string point_cloud_topic_name_;
+    std::default_random_engine generator;
 
     private: void InfoConnect();
     private: void InfoDisconnect();

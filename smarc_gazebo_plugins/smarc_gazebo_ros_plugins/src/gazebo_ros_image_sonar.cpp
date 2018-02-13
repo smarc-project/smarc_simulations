@@ -704,6 +704,67 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
   return SNR; //sonar_image8;
 }
 
+void GazeboRosImageSonar::ApplySpeckleNoise(cv::Mat& scan, float fov)
+{
+
+}
+
+void GazeboRosImageSonar::ApplySmoothing(cv::Mat& scan, float fov)
+{
+  int nrolls = 300;
+  int window_size = 30;
+
+  std::vector<std::vector<int> > range_indices(scan.rows/1);
+  std::vector<int> nbr_indices(scan.rows/1, 0);
+
+  float threshold = tan(fov);
+
+  for (int j = 0; j < scan.cols; ++j) {
+    for (int i = 0; i < scan.rows; ++i) {
+      float x = fabs(float(scan.cols)/2. - j);
+	  float y = scan.rows - i;
+      int dist = int(sqrt(x*x+y*y))/1;
+      if (dist >= scan.rows/1 || fabs(x)/y > threshold) {
+		continue;
+      }
+	  range_indices[dist].push_back(scan.cols*i+j);
+	  nbr_indices[dist] += 1;
+    }
+  }
+
+  std::discrete_distribution<> range_dist(nbr_indices.begin(), nbr_indices.end());
+  std::uniform_real_distribution<double> index_dist(0.0, 1.0);
+
+  for (int i = 0; i < nrolls; ++i) {
+    int sampled_range = range_dist(generator);
+	if (nbr_indices[sampled_range] == 0) {
+      continue;
+    }
+	int sampled_index = int(index_dist(generator)*nbr_indices[sampled_range]);
+	//float mean[3] = {0., 0., 0.};
+	float mean = 0.;
+	int counter = 0;
+	for (int i = std::max(0, sampled_index-window_size); i < std::min(nbr_indices[sampled_range], sampled_index+window_size); ++i) {
+      mean += scan.at<float>(range_indices[sampled_range][i]);
+      /*mean[0] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[0];
+      mean[1] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[1];
+      mean[2] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[2];*/
+	  ++counter;
+    }
+
+	if (counter == 0) {
+      continue;
+    }
+	//cv::Vec3b mean_color(mean[0]/counter, mean[1]/counter, mean[2]/counter);
+
+	for (int i = std::max(0, sampled_index-10); i < std::min(nbr_indices[sampled_range], sampled_index+10); ++i) {
+      //scan.at<cv::Vec3b>(range_indices[sampled_range][i]) = mean_color;
+      scan.at<float>(range_indices[sampled_range][i]) = mean/float(counter);
+    }
+  }
+
+}
+
 cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 {
   int rows = 400; // TODO: add a parameter for this
@@ -712,15 +773,8 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   float fov = depthCamera->HFOV().Degree();
   int cols = 2*int(float(rows)*sin(M_PI/180.*fov/2.))+20;
 
-  cv::Scalar blue(15, 48, 102);
-  cv::Scalar black(0, 0, 0);
-  cv::Mat scan(rows, cols, CV_8UC3);
-  scan.setTo(blue);
+  cv::Mat scan = cv::Mat::zeros(rows, cols, CV_32FC1);
   //float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
-
-  cv::Point center(scan.cols/2, scan.rows);
-  cv::Size axes(scan.rows, scan.rows);
-  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
 
   float mapped_range = float(scan.rows);
   
@@ -746,20 +800,47 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 
 	  int pi = scan.rows - 1 - int(z/range*mapped_range);
 	  int pj = scan.cols/2 + int(x/range*mapped_range);
+      if (pi < scan.rows && pi > 0 && pj < scan.cols && pj > 0 && x*x + z*z < range*range) {      
+	    scan.at<float>(pi, pj) = a;
+      }
+    }
+  }
+  this->ApplySpeckleNoise(scan, fov);
+  this->ApplySmoothing(scan, fov);
 
-	  if (pi < scan.rows && pi > 0 && pj < scan.cols && pj > 0 && x*x + z*z < range*range) {
-	    //scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(a, a, a);
-        if (a < 0.8) {
-		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255*1.25*a, 255*0.78*a, 255*0.50*a);
-		}
-		else if(a < 1.) {
-		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255*a, 255*(1.88*a-0.88), 255*(-1.99*a+1.99));
-		}
-		else {
-		  scan.at<cv::Vec3b>(pi, pj) = cv::Vec3b(255, 255*(1.88-0.88), 255*(-1.99+1.99));
-		}
-	  }
+  return scan;
+}
 
+cv::Mat GazeboRosImageSonar::ConstructVisualScanImage(cv::Mat& raw_scan)
+{
+  float fov = depthCamera->HFOV().Degree();
+  float mapped_range = float(raw_scan.rows);
+
+  cv::Scalar blue(15, 48, 102);
+  cv::Scalar black(0, 0, 0);
+  cv::Mat scan(raw_scan.rows, raw_scan.cols, CV_8UC3);
+  scan.setTo(blue);
+  
+  cv::Point center(scan.cols/2, scan.rows);
+  cv::Size axes(scan.rows, scan.rows);
+  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
+
+  for (int i = 0; i < scan.rows; ++i) {
+    for (int j = 0; j < scan.cols; ++j) {
+      float a = raw_scan.at<float>(i, j);
+      if (a == 0.) {
+		continue;
+      }
+
+      if (a < 0.8) {
+		scan.at<cv::Vec3b>(i, j) = cv::Vec3b(255*1.25*a, 255*0.78*a, 255*0.50*a);
+      }
+      else if(a < 1.) {
+		scan.at<cv::Vec3b>(i, j) = cv::Vec3b(255*a, 255*(1.88*a-0.88), 255*(-1.99*a+1.99));
+      }
+      else {
+		scan.at<cv::Vec3b>(i, j) = cv::Vec3b(255, 255*(1.88-0.88), 255*(-1.99+1.99));
+      }
    }
   }
   
@@ -820,7 +901,8 @@ void GazeboRosImageSonar::ComputeSonarImage(const float *_src)
   // publish normal image
   cv::Mat normal_image = this->ComputeNormalImage(depth_image);
   cv::Mat multibeam_image = this->ConstructSonarImage(depth_image, normal_image);
-  this->ConstructScanImage(depth_image, multibeam_image);
+  cv::Mat raw_scan = this->ConstructScanImage(depth_image, multibeam_image);
+  this->ConstructVisualScanImage(raw_scan);
   
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->depth_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, depth_image);
