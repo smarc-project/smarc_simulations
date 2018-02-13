@@ -681,25 +681,23 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
   float NL = 30; // noise level
   float DI = 0.0; // directivity index
 
-
-  std::vector<float> t_x, t_y;
-  for (int i = 0; i < depth.cols; i++) t_x.push_back((float(i) - this->cx_)/this->focal_length_);
-  for (int i = 0; i < depth.rows; i++) t_y.push_back((float(i) - this->cy_)/this->focal_length_);
-  cv::Mat X, Y;
-  cv::repeat(cv::Mat(t_x).reshape(1,1), t_y.size(), 1, X);
-  cv::repeat(cv::Mat(t_y).reshape(1,1).t(), 1, t_x.size(), Y);
-  cv::Mat dist(depth.rows, depth.cols, CV_32FC1);
-
-  cv::multiply(X, X, X);
-  cv::multiply(Y, Y, Y);
-
-  //gzerr << "X rows: " << X.rows << " X cols: " << X.cols << " Y rows: " << Y.rows << " Y cols: " << Y.cols << std::endl;
-  cv::sqrt(X + Y + 1, dist);
+  if (dist_matrix_.empty()) {
+    std::vector<float> t_x, t_y;
+    for (int i = 0; i < depth.cols; i++) t_x.push_back((float(i) - this->cx_)/this->focal_length_);
+    for (int i = 0; i < depth.rows; i++) t_y.push_back((float(i) - this->cy_)/this->focal_length_);
+    cv::Mat X, Y;
+    cv::repeat(cv::Mat(t_x).reshape(1,1), t_y.size(), 1, X);
+    cv::repeat(cv::Mat(t_y).reshape(1,1).t(), 1, t_x.size(), Y);
+    dist_matrix_ = cv::Mat::zeros(depth.rows, depth.cols, CV_32FC1);
+    cv::multiply(X, X, X);
+    cv::multiply(Y, Y, Y);
+    cv::sqrt(X + Y + 1, dist_matrix_);
+  }
 
   // TODO: make these into proper parameters
   cv::Mat TS = intensity*images[2]; // target strength, probably dir should be DI
   cv::Mat TL = 5*depth; // transmission loss
-  cv::multiply(TL, dist, TL);
+  cv::multiply(TL, dist_matrix_, TL);
   cv::Mat SNR = SL - 2.0*TL - (NL-DI) + TS;
   SNR.setTo(0., SNR < 0.);
 
@@ -741,56 +739,65 @@ void GazeboRosImageSonar::ApplySmoothing(cv::Mat& scan, float fov)
   int nrolls = 300;
   int window_size = 30;
 
-  std::vector<std::vector<int> > range_indices(scan.rows/1);
-  std::vector<int> nbr_indices(scan.rows/1, 0);
-
-  float threshold = tan(fov);
-
-  for (int j = 0; j < scan.cols; ++j) {
-    for (int i = 0; i < scan.rows; ++i) {
-      float x = fabs(float(scan.cols)/2. - j);
-	  float y = scan.rows - i;
-      int dist = int(sqrt(x*x+y*y))/1;
-      if (dist >= scan.rows/1 || fabs(x)/y > threshold) {
-		continue;
+  if (angle_range_indices_.empty()) {
+    angle_range_indices_.resize(scan.rows/1);
+    angle_nbr_indices_.resize(scan.rows/2, 0);
+    float threshold = tan(fov);
+    for (int j = 0; j < scan.cols; ++j) {
+      for (int i = 0; i < scan.rows; ++i) {
+        float x = fabs(float(scan.cols)/2. - j);
+	    float y = scan.rows - i;
+        int dist = int(sqrt(x*x+y*y))/2;
+        if (dist >= scan.rows/2 || fabs(x)/y > threshold) {
+		  continue;
+        }
+	    angle_range_indices_[dist].push_back(scan.cols*i+j);
+	    angle_nbr_indices_[dist] += 1;
       }
-	  range_indices[dist].push_back(scan.cols*i+j);
-	  nbr_indices[dist] += 1;
     }
   }
 
-  std::discrete_distribution<> range_dist(nbr_indices.begin(), nbr_indices.end());
+  std::discrete_distribution<> range_dist(angle_nbr_indices_.begin(), angle_nbr_indices_.end());
   std::uniform_real_distribution<double> index_dist(0.0, 1.0);
 
+  std::vector<float> kernel(window_size);
+  for (int i = 0; i < window_size; ++i) {
+    float diff = float(i-window_size/2)/float(window_size/4.);
+    kernel[i] = exp(-0.5*diff);
+  }
 
-  std::binomial_distribution<int> distribution(window_size, 0.5);
-
+  std::vector<float> conv_results(2*window_size);
   for (int i = 0; i < nrolls; ++i) {
     int sampled_range = range_dist(generator);
-	if (nbr_indices[sampled_range] == 0) {
+	if (angle_nbr_indices_[sampled_range] == 0) {
       continue;
     }
-	int sampled_index = int(index_dist(generator)*nbr_indices[sampled_range]);
-	//float mean[3] = {0., 0., 0.};
-	float mean = 0.;
-	int counter = 0;
-	for (int i = std::max(0, sampled_index-window_size); i < std::min(nbr_indices[sampled_range], sampled_index+window_size); ++i) {
-      mean += scan.at<float>(range_indices[sampled_range][i]);
-      /*mean[0] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[0];
-      mean[1] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[1];
-      mean[2] += scan.at<cv::Vec3b>(range_indices[sampled_range][i])[2];*/
-	  ++counter;
+	int sampled_index = int(index_dist(generator)*angle_nbr_indices_[sampled_range]);
+
+	int window_start = std::max(0, sampled_index-window_size);
+	int window_end = std::min(angle_nbr_indices_[sampled_range], sampled_index+window_size);
+	for (int i = window_start; i < window_end; ++i) {
+	  conv_results[i - window_start] = 0.;
+	  float conv_mass = 0.;
+      for (int j = 0; j < window_size; ++j) {
+		int index = i + j - window_size/2;
+		if (index >= 0 && index < angle_nbr_indices_[sampled_range]) {
+		   conv_results[i - window_start] += kernel[j]*scan.at<float>(angle_range_indices_[sampled_range][index]);
+		   conv_mass += kernel[j];
+		}
+      }
+	  if (conv_mass == 0.) {
+	    conv_results[i - window_start] = scan.at<float>(angle_range_indices_[sampled_range][i]);
+      }
+	  else {
+	    conv_results[i - window_start] *= 1./conv_mass;
+      }
     }
 
-	if (counter == 0) {
-      continue;
+	for (int i = window_start; i < window_end; ++i) {
+      scan.at<float>(angle_range_indices_[sampled_range][i]) = conv_results[i - window_start];
     }
-	//cv::Vec3b mean_color(mean[0]/counter, mean[1]/counter, mean[2]/counter);
 
-	for (int i = std::max(0, sampled_index-10); i < std::min(nbr_indices[sampled_range], sampled_index+10); ++i) {
-      //scan.at<cv::Vec3b>(range_indices[sampled_range][i]) = mean_color;
-      scan.at<float>(range_indices[sampled_range][i]) = mean/float(counter);
-    }
   }
 
 }

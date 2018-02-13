@@ -172,6 +172,11 @@ namespace gazebo
 	// from DepthCameraPlugin
 	protected: unsigned int width, height, depth;
     protected: std::string format;
+		
+    // precomputed things for the forward-looking sonar
+    protected: cv::Mat dist_matrix_;
+    std::vector<std::vector<int> > angle_range_indices_;
+    std::vector<int> angle_nbr_indices_;
 
     protected: sensors::DepthCameraSensorPtr parentSensor;
     protected: rendering::DepthCameraPtr depthCamera;
