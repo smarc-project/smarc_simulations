@@ -199,6 +199,14 @@ void GazeboRosImageSonar::Advertise()
       ros::VoidPtr(), &this->camera_queue_);
   this->sonar_image_pub_ = this->rosnode_->advertise(sonar_image_ao);
 
+  ros::AdvertiseOptions raw_sonar_image_ao =
+    ros::AdvertiseOptions::create< sensor_msgs::Image >(
+      this->depth_image_topic_name_+"_raw_sonar",1,
+      boost::bind( &GazeboRosImageSonar::RawSonarImageConnect,this),
+      boost::bind( &GazeboRosImageSonar::RawSonarImageDisconnect,this),
+      ros::VoidPtr(), &this->camera_queue_);
+  this->raw_sonar_image_pub_ = this->rosnode_->advertise(raw_sonar_image_ao);
+
   ros::AdvertiseOptions depth_image_camera_info_ao =
     ros::AdvertiseOptions::create<sensor_msgs::CameraInfo>(
         this->depth_image_camera_info_topic_name_,1,
@@ -279,6 +287,20 @@ void GazeboRosImageSonar::SonarImageConnect()
 ////////////////////////////////////////////////////////////////////////////////
 // Decrement count
 void GazeboRosImageSonar::SonarImageDisconnect()
+{
+  this->depth_image_connect_count_--;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Increment count
+void GazeboRosImageSonar::RawSonarImageConnect()
+{
+  this->depth_image_connect_count_++;
+  this->parentSensor->SetActive(true);
+}
+////////////////////////////////////////////////////////////////////////////////
+// Decrement count
+void GazeboRosImageSonar::RawSonarImageDisconnect()
 {
   this->depth_image_connect_count_--;
 }
@@ -850,6 +872,12 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   this->ApplySpeckleNoise(scan, fov);
   this->ApplySmoothing(scan, fov);
 
+  cv_bridge::CvImage img_bridge;
+  img_bridge = cv_bridge::CvImage(this->raw_sonar_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, scan);
+  img_bridge.toImageMsg(this->raw_sonar_image_msg_); // from cv_bridge to sensor_msgs::Image
+  
+  this->raw_sonar_image_pub_.publish(this->raw_sonar_image_msg_);
+
   return scan;
 }
 
@@ -944,7 +972,7 @@ void GazeboRosImageSonar::ComputeSonarImage(const float *_src)
   cv::Mat normal_image = this->ComputeNormalImage(depth_image);
   cv::Mat multibeam_image = this->ConstructSonarImage(depth_image, normal_image);
   cv::Mat raw_scan = this->ConstructScanImage(depth_image, multibeam_image);
-  this->ConstructVisualScanImage(raw_scan);
+  cv::Mat visual_scan = this->ConstructVisualScanImage(raw_scan);
   
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->depth_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, depth_image);
