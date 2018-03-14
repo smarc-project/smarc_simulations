@@ -190,6 +190,7 @@ target_link_libraries(register_underwater_sonar_sensor
   underwater_sonar_sensor
   ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES}
 )
+<<<<<<< HEAD
 
 target_link_libraries(population_intensities
     ${GAZEBO_LIBRARIES}

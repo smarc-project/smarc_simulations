@@ -144,6 +144,7 @@
     </include>
 	
 	<plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
+
       <namespace>hydrodynamics</namespace>
       <constant_current>
         <topic>current_velocity</topic>

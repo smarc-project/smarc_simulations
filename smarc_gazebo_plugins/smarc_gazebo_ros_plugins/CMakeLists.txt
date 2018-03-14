@@ -21,8 +21,11 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+<<<<<<< HEAD
 
 find_package(OGRE REQUIRED)
+=======
+>>>>>>> ignaciotb/master
 find_package(gazebo REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -174,6 +177,7 @@ target_link_libraries(underwater_sonar_ros_plugin
   ${catkin_LIBRARIES}
 )
 
+<<<<<<< HEAD
 target_link_libraries(underwater_sonar_ray_ros_plugin
   ${catkin_LIBRARIES}
 )
@@ -183,6 +187,7 @@ target_link_libraries(image_sonar_ros_plugin
   ${GAZEBO_LIBRARIES}
   ${OGRE_LIBRARIES}
 )
+
 #############
 ## Install ##
 #############
