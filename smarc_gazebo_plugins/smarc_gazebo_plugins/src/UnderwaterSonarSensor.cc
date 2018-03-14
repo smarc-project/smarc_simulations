@@ -41,9 +41,29 @@
 #include <smarc_gazebo_plugins/UnderwaterSonarSensor.hh>
 #include <smarc_gazebo_plugins/SemanticMultiRayShape.hh>
 #include <gazebo/sensors/Noise.hh>
+#include <math.h>
+
 
 using namespace gazebo;
 using namespace sensors;
+
+//lofu start
+//SONAR PARAMETER SETTINGS
+double freq = 340000; //sonar frequency Hz
+double SL = 200.0; // source level
+double soundVel = 1500;
+double lamda = soundVel/freq;
+double k = 2*M_PI/lamda ;//wavenumber
+
+//ENVIRONMENTAL PARAMETER SETTINGS
+//TL,seastate... etc
+double TL_per_km = 90;//90dB/km (from table pg ... TransmissionLoss.pdf
+double NL = 40; // noise level seastate0 for f > 2000 Hz from NoiseLevel.pdf (graph pg3)
+
+//default
+
+
+//lofu end
 
 GZ_REGISTER_STATIC_SENSOR("underwater_sonar", UnderwaterSonarSensor)
 
@@ -516,6 +536,9 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
     ray->GetIntersection(_dist, _entity);
     //printf("%s", _entity.c_str());
 
+
+
+
     // Mask ranges outside of min/max to +/- inf, as per REP 117
     if (range >= this->RangeMax())
     {
@@ -535,12 +558,41 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
     }
 
 	// TODO: make these into proper parameters
-	double SL = 200.0; // source level
-    double TS = double(intensity)*(0.5*M_PI-angle)/M_PI; // target strength, probably dir should be DI
-	double TL = 0.5*range; // transmission loss
-	double NL = 30; // noise level
+        //double SL = 200.0; // source level
+        double TS = 0.0; //double(intensity)*(0.5*M_PI-angle)/M_PI; // target strength, probably dir should be DI
+        double TL = TL_per_km*range/1000; // 0.5*range; // transmission loss
 	double DI = 0.0; // directivity index 
-    double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+        double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+
+        //lofu start test
+
+        //std::cout<< _entity<< std::endl;
+        //std::cout << "..." << std::endl;
+       // printf("%s", _entity.c_str());
+
+
+        printf("%s\n", _entity.c_str());
+
+        //See if entities contain .. unit_cylinder or large_rock then set TS otherwise...
+        std::string s1 = _entity.c_str();
+        std::string s2 = "large_rock";
+        std::string s3 = "cylinder";
+        if (s1.find(s2) != std::string::npos) {
+                std::cout << "large rock found!" << '\n';
+                double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+
+            }
+        if (s1.find(s3) != std::string::npos) {
+                std::cout << "cylinder found!" << '\n';
+                double a = 1; // unit cylider radius
+                double L = 1; //length cylinder
+                double beta = k*L*sin(angle);
+                double TS = (a*pow(L,2)*pow(sin(beta)/beta, 2)*pow(cos(angle),2))/(2*lamda); //formula for finite cylinder with ka >> 1
+                double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+            }
+
+
+        //lofu end test
 
 	//intensity = intensity + 90.0 - 180.0/M_PI*angle;
 	//intensity = 180.0/M_PI*angle;
@@ -551,9 +603,9 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 	entities->add_data(_entity);
   }
 
+  this->dataPtr->scanPub->Publish(this->dataPtr->laserMsg);
+if (this->dataPtr->entityPub && this->dataPtr->entityPub->HasConnections())
   if (this->dataPtr->scanPub && this->dataPtr->scanPub->HasConnections())
-    this->dataPtr->scanPub->Publish(this->dataPtr->laserMsg);
-  if (this->dataPtr->entityPub && this->dataPtr->entityPub->HasConnections())
     this->dataPtr->entityPub->Publish(this->dataPtr->entityMsg);
 
   return true;
