@@ -80,6 +80,62 @@
       <name>pipeline</name>
     </include>
 
+    <!-- Beacons -->
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>205 -23 -95 0 0 0</pose>
+      <name>beacon_0</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>170 -60 -95 0 0 0</pose>
+      <name>beacon_1</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>123 -78 -95 0 0 0</pose>
+      <name>beacon_2</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>66 -80 -95 0 0 0</pose>
+      <name>beacon_3</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-10 -80 -95 0 0 0</pose>
+      <name>beacon_4</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-98 -77 -95 0 0 0</pose>
+      <name>beacon_5</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-153 -81 -95 0 0 0</pose>
+      <name>beacon_6</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-198 -111 -95 0 0 0</pose>
+      <name>beacon_7</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-230 -152 -95 0 0 0</pose>
+      <name>beacon_8</name>
+    </include>
+
+
     <!-- Dummy laser -->
     <include>
       <uri>model://dummy_laser</uri>
@@ -88,6 +144,7 @@
     </include>
 	
 	<plugin name="underwater_world" filename="libuuv_underwater_world_ros_plugin.so">
+
       <namespace>hydrodynamics</namespace>
       <constant_current>
         <topic>current_velocity</topic>
