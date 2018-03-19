@@ -183,6 +183,7 @@ target_link_libraries(image_sonar_ros_plugin
   ${GAZEBO_LIBRARIES}
   ${OGRE_LIBRARIES}
 )
+
 #############
 ## Install ##
 #############
