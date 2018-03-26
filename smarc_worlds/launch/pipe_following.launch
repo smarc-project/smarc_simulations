@@ -45,6 +45,9 @@
                     plane: [2000, 0.1, 100]
                     pose:
                         position: [0, 1000, -50]
+                pipeline:
+                    mesh: package://smarc_worlds/world_models/pipeline/meshes/pipeline.dae
+                    model: pipeline
         </rosparam>
     </node>
 
