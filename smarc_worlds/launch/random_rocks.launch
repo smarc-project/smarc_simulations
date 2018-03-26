@@ -6,22 +6,14 @@
 
     <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-<<<<<<< HEAD
         <arg name="world_name" value="worlds/rocks_random.world"/>
-=======
-        <arg name="world_name" value="worlds/random_rocks.world"/>
->>>>>>> ignaciotb/master
         <arg name="paused" value="$(arg paused)"/>
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="$(arg gui)"/>
         <arg name="headless" value="false"/>
         <arg name="debug" value="false"/>
         <arg name="verbose" value="true"/>
-<<<<<<< HEAD
         <arg name="extra_gazebo_args" value="-s libregister_underwater_sonar_sensor.so"/>
-=======
-		<arg name="extra_gazebo_args" value="-s libregister_underwater_sonar_sensor.so"/>
->>>>>>> ignaciotb/master
     </include>
 
     <node name="publish_world_models"
@@ -31,7 +23,6 @@
         <rosparam subst_value="true">
             meshes:
                 seafloor:
-<<<<<<< HEAD
                     plane: [2000, 2000, 0.1]
                     pose:
                         position: [0, 0, -100]
@@ -51,27 +42,6 @@
                     plane: [2000, 0.1, 100]
                     pose:
                         position: [0, 1000, -50]
-=======
-                    plane: [500, 500, 0.1]
-                    pose:
-                        position: [0, 0, -100]
-                north:
-                    plane: [0.1, 500, 100]
-                    pose:
-                        position: [250, 0, -50]
-                south:
-                    plane: [0.1, 500, 100]
-                    pose:
-                        position: [-250, 0, -50]
-                west:
-                    plane: [500, 0.1, 100]
-                    pose:
-                        position: [0, -250, -50]
-                east:
-                    plane: [500, 0.1, 100]
-                    pose:
-                        position: [0, 250, -50]
->>>>>>> ignaciotb/master
         </rosparam>
     </node>
 
