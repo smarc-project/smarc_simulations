@@ -15,7 +15,7 @@
      limitations under the License.
 -->
 <sdf version="1.4">
-  <world name="oceans_waves">
+  <world name="rocks_random">
     <physics name="default_physics" default="true" type="ode">
       <max_step_size>0.002</max_step_size>
       <real_time_factor>1</real_time_factor>
@@ -67,18 +67,53 @@
       <pose>0 0 0 0 0 0</pose>
     </include>
 
-    <!-- Heightmap -->
-    <include>
-      <uri>model://sand_heightmap_pipe</uri>
-      <pose>0 0 -95 0 0 0</pose>
-	</include>
+    <population name="rock_population1">
+      <model name="large_rock1">
+        <include>
+          <static>true</static>
+          <uri>model://large_rock</uri>
+        </include>
+      </model>
+      <pose>0 0 -100 0 0 0</pose>
+      <box>
+        <size>2000 2000 0.1</size>
+      </box>
+      <model_count>100</model_count>
+      <distribution>
+        <type>random</type>
+      </distribution>
+    </population>
 
-    <!-- Large rock -->
-    <include>
-      <uri>model://large_rock</uri>
-      <pose>-172 32 -95 0 0 0</pose>
-      <name>large_rock_1</name>
-    </include>
+<!--     <population name="rock_population2">
+      <model name="large_rock2">
+        <include>
+          <uri>model://large_rock</uri>
+        </include>
+      </model>
+      <pose>0 0 -100 0 0 0</pose>
+      <distribution>
+        <type>grid</type>
+        <rows>10</rows>
+        <cols>10</cols>
+        <step>10 10 0</step>
+      </distribution>
+    </population> -->
+
+<!--     <population name="rock_population3">
+      <model name="large_rock3">
+        <include>
+          <uri>model://large_rock</uri>
+        </include>
+      </model>
+      <pose>0 0 100 0 0 0</pose>
+      <box>
+        <size>1000 1000 0.1</size>
+      </box>
+      <model_count>100</model_count>
+      <distribution>
+        <type>uniform</type>
+      </distribution>
+    </population> -->
 
     <!-- Dummy laser -->
     <include>

@@ -29,6 +29,7 @@
   </group>
 
   <!-- publish state and tf for in relation to the world frame -->
+  <!--
   <group ns="$(arg namespace)">
     <node name="ground_truth_to_tf" pkg="message_to_tf" type="message_to_tf" output="screen">
       <param name="odometry_topic" value="/$(arg namespace)/pose_gt" />
@@ -37,6 +38,7 @@
       <param name="child_frame_id" value="base_link" />
     </node>
   </group>
+  -->
 
   <include file="$(find smarc_sensor_plugins_ros)/launch/waterfall.launch">
     <arg name="namespace" value="$(arg namespace)"/>

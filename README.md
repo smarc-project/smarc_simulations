@@ -11,6 +11,11 @@ in https://github.com/uuvsimulator/uuv_simulator/wiki#using-uuv-simulator-with-r
 Then clone https://github.com/smarc-project/uuv_simulator.git in your catkin workspace.
 Compile it with `catkin_make`, followed by `catkin_make install`.
 
+Then install the following packages:
+```
+sudo apt-get install ros-kinetic-ros-control ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller
+```
+
 ## Environment variables
 
 Add the following lines to your `.bashrc`, replace `GAZEBO_PREFIX` to be the path to your catkin workspace.
