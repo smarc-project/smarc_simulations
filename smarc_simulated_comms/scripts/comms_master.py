@@ -13,9 +13,6 @@ import math
 from gazebo_msgs.msg import ModelStates
 from smarc_msgs.msg import CommsMessage
 
-MAX_DIST = 20
-RESCAN_PERIOD = 10
-
 
 class CommsMaster:
     def __init__(self):
@@ -32,15 +29,17 @@ class CommsMaster:
         self.known_agents = {}
         self._scan_topics()
 
-        global MAX_DIST
-        self.MAX_DIST = MAX_DIST
-        global RESCAN_PERIOD
-        self.RESCAN_PERIOD = RESCAN_PERIOD
-        self._last_update = 0
+        #  global MAX_DIST
+        self.MAX_DIST = rospy.get_param('comms_master/max_comm_distance', default=100)
+        #  global RESCAN_PERIOD
+        self.RESCAN_PERIOD = rospy.get_param('comms_master/rescan_period', default=10)
+        self._last_update = rospy.Time.now()
+
 
 
     def update(self):
-        if rospy.Time.now() - self._last_update > self.RESCAN_PERIOD:
+        dt = rospy.Time.now() - self._last_update
+        if  dt.secs > self.RESCAN_PERIOD:
             self._scan_topics()
             self._last_update = rospy.Time.now()
 

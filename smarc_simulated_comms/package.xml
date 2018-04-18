@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>smarc_comms</name>
+  <name>smarc_simulated_comms</name>
   <version>0.0.0</version>
   <description>The smarc_comms package</description>
 
