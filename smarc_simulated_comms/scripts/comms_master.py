@@ -23,15 +23,15 @@ class CommsMaster:
         # listen to incoming packets
         rospy.Subscriber('/comms/inbound', CommsMessage, self._CB_packet_received)
 
+        # names to scan for
+        self._names_to_scan = rospy.get_param('comms_master/scanned_names', default=['lolo','sam','comm_node'])
 
         # a list of known communicators. 
         # there should be 'namespace:publisher' pairs in here
         self.known_agents = {}
         self._scan_topics()
 
-        #  global MAX_DIST
         self.MAX_DIST = rospy.get_param('comms_master/max_comm_distance', default=100)
-        #  global RESCAN_PERIOD
         self.RESCAN_PERIOD = rospy.get_param('comms_master/rescan_period', default=10)
         self._last_update = rospy.Time.now()
 
@@ -47,7 +47,7 @@ class CommsMaster:
         """
         this looks at all topics and tries to find lolos and sams
         """
-        target_names = ['lolo', 'sam']
+        target_names = self._names_to_scan
         all_topics = rospy.get_published_topics()
         for name in target_names:
             for topic, topic_type in all_topics:

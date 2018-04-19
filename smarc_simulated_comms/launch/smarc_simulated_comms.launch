@@ -1,8 +1,10 @@
 <launch>
 		<arg name="max_comm_distance" default="200"/>
 		<arg name="rescan_period" default="10"/>
+
 		<node pkg="smarc_simulated_comms" name="comms_master" type="comms_master.py" output="screen">
 				<param name="max_comm_distance" value="$(arg max_comm_distance)"/>
 				<param name="rescan_period" value="$(arg rescan_period)"/>
+				<rosparam param="scanned_names">["lolo","sam","comm_node"]</rosparam>
 		</node>
 </launch>
