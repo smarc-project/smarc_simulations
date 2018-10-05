@@ -108,8 +108,13 @@
         <mass value="${mass}" />
         <origin xyz="0 0 0" rpy="0 0 0" />
       </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="file://$(find uuv_sensor_plugins)/mesh/oe14-372.dae" scale="1 1 1"/>
+        </geometry>
+      </visual>
 
-      <xacro:insert_block name="visual" />
+      <!-- <xacro:insert_block name="visual" /> -->
       <xacro:no_collision/>
     </link>
 
