@@ -103,6 +103,7 @@ namespace gazebo
     private: cv::Mat ConstructScanImage(cv::Mat& depth, cv::Mat& SNR);
     private: void ApplySpeckleNoise(cv::Mat& scan, float fov);
     private: void ApplySmoothing(cv::Mat& scan, float fov);
+    private: void ApplyMedianFilter(cv::Mat& scan);
     private: cv::Mat ConstructVisualScanImage(cv::Mat& raw_scan);
 
     /// \brief Keep track of number of connctions for point clouds

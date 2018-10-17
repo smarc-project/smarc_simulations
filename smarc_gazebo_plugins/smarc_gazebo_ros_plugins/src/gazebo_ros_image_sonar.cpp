@@ -742,7 +742,7 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
 void GazeboRosImageSonar::ApplySpeckleNoise(cv::Mat& scan, float fov)
 {
-  std::normal_distribution<double> speckle_dist(1.0, 0.3);
+  std::normal_distribution<double> speckle_dist(1.0, 0.1);
 
   for (int i = 0; i < scan.rows; ++i) {
     for (int j = 0; j < scan.cols; ++j) {
@@ -750,7 +750,7 @@ void GazeboRosImageSonar::ApplySpeckleNoise(cv::Mat& scan, float fov)
       if (a == 0.) {
 		continue;
       }
-	  float speckle = fmax(speckle_dist(generator), 0.);
+	  float speckle = fabs(speckle_dist(generator));
       a *= speckle;
 	}
   }
@@ -824,6 +824,19 @@ void GazeboRosImageSonar::ApplySmoothing(cv::Mat& scan, float fov)
 
 }
 
+void GazeboRosImageSonar::ApplyMedianFilter(cv::Mat& scan)
+{
+  cv::Mat is_zero = scan == 0.;
+  cv::Mat is_bg = scan == 0.2;
+  cv::bitwise_or(is_zero, is_bg, is_zero);
+
+  cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 9));
+  cv::Mat scan_dilated;
+  cv::dilate(scan, scan_dilated, element, cv::Point(-1, -1), 1, 1, 1);
+  //scan.setTo(scan_dilated, is_zero);
+  scan_dilated.copyTo(scan, is_zero);
+}
+
 cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 {
   int rows = 400; // TODO: add a parameter for this
@@ -869,8 +882,9 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
       }
     }
   }
+  this->ApplyMedianFilter(scan);
   this->ApplySpeckleNoise(scan, fov);
-  this->ApplySmoothing(scan, fov);
+  //this->ApplySmoothing(scan, fov);
 
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->raw_sonar_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, scan);
@@ -892,7 +906,7 @@ cv::Mat GazeboRosImageSonar::ConstructVisualScanImage(cv::Mat& raw_scan)
   scan.setTo(blue);
   
   cv::Point center(scan.cols/2, scan.rows);
-  cv::Size axes(scan.rows, scan.rows);
+  cv::Size axes(scan.rows+3, scan.rows+3);
   cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., black, -1); //, int lineType=LINE_8, 0);
 
   for (int i = 0; i < scan.rows; ++i) {
@@ -917,12 +931,12 @@ cv::Mat GazeboRosImageSonar::ConstructVisualScanImage(cv::Mat& raw_scan)
   cv::Scalar white(255, 255, 255);
   cv::Size axes1(2./3.*scan.rows, 2./3.*scan.rows);
   cv::Size axes2(1./3.*scan.rows, 1./3.*scan.rows);
-  cv::ellipse(scan, center, axes, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
+  cv::ellipse(scan, center, axes, -90, -fov/2.-0.5, fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
   cv::ellipse(scan, center, axes1, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
   cv::ellipse(scan, center, axes2, -90, -fov/2., fov/2., white, 1, CV_AA); //, int lineType=LINE_8, 0);
 
   for (int i = 0; i < 5; ++i) {
-    float angle = -fov/2. + fov*i/float(5-1);
+    float angle = -fov/2.-0.5 + (fov+0.5)*i/float(5-1);
     int cornerx = int(mapped_range*sin(M_PI/180.*angle));
     int cornery = int(mapped_range*cos(M_PI/180.*angle));
     //cv::Point left_corner(scan.cols/2-cornerx, scan.rows-cornery); 
