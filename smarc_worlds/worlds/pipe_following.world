@@ -80,10 +80,91 @@
       <name>pipeline</name>
     </include>
 
-    <!-- Beacons -->
     <include>
       <uri>model://large_rock</uri>
-      <pose>205 -23 -95 0 0 0</pose>
+      <pose>234 -30 -95 0 0 0</pose>
+      <name>rock_1</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>230 -16 -95 0 0 0</pose>
+      <name>rock_2</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>238 -15 -95 0 0 0</pose>
+      <name>rock_4</name>
+    </include>
+    
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>140 -74 -95 0 0 0</pose>
+      <name>rock_3</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>104 -77 -95 0 0 0</pose>
+      <name>rock_7</name>
+    </include>
+    
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>94 -87 -95 0 0 0</pose>
+      <name>rock_6</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>76 -92 -95 0 0 0</pose>
+      <name>rock_5</name>
+    </include>
+
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-178 -110 -95 0 0 0</pose>
+      <name>rock_8</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-220 -145 -95 0 0 0</pose>
+      <name>rock_9</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>15 -90 -95 0 0 0</pose>
+      <name>rock_10</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>29 -91 -95 0 0 0</pose>
+      <name>rock_11</name>
+    </include>
+
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-49 -81 -95 0 0 0</pose>
+      <name>rock_12</name>
+    </include>
+<!--     <include>
+      <uri>model://large_rock</uri>
+      <pose>-45 -92 -95 0 0 0</pose>
+      <name>rock_11</name>
+    </include> -->
+
+
+    <!-- Beacons -->
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>200 -23 -95 0 0 0</pose>
       <name>beacon_0</name>
     </include>
 
@@ -133,6 +214,12 @@
       <uri>model://large_rock</uri>
       <pose>-230 -152 -95 0 0 0</pose>
       <name>beacon_8</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-182 -37 -95 0 0 0</pose>
+      <name>beacon_9</name>
     </include>
 
 
