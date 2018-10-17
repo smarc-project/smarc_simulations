@@ -67,7 +67,7 @@
       <pose>0 0 0 0 0 0</pose>
     </include>
 
-    <population name="rock_population1">
+    <!-- <population name="rock_population1">
       <model name="large_rock1">
         <include>
           <static>true</static>
@@ -82,38 +82,140 @@
       <distribution>
         <type>random</type>
       </distribution>
-    </population>
+    </population> -->
 
-<!--     <population name="rock_population2">
+    <population name="rock_population2">
       <model name="large_rock2">
         <include>
           <uri>model://large_rock</uri>
         </include>
       </model>
-      <pose>0 0 -100 0 0 0</pose>
+      <pose>-0 0 -100 0 0 0</pose>
       <distribution>
         <type>grid</type>
         <rows>10</rows>
         <cols>10</cols>
         <step>10 10 0</step>
       </distribution>
-    </population> -->
+    </population>
 
-<!--     <population name="rock_population3">
-      <model name="large_rock3">
-        <include>
-          <uri>model://large_rock</uri>
-        </include>
-      </model>
-      <pose>0 0 100 0 0 0</pose>
-      <box>
-        <size>1000 1000 0.1</size>
-      </box>
-      <model_count>100</model_count>
-      <distribution>
-        <type>uniform</type>
-      </distribution>
-    </population> -->
+<!--     <include>
+      <uri>model://large_rock</uri>
+      <pose>10 -5 -100 0 0 0</pose>
+      <name>beacon_0</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>10 2 -100 0 0 0</pose>
+      <name>beacon_1</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>10 6 -100 0 0 0</pose>
+      <name>beacon_2</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>15 -5 -100 0 0 0</pose>
+      <name>beacon_3</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>15 2 -100 0 0 0</pose>
+      <name>beacon_4</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>15 6 -100 0 0 0</pose>
+      <name>beacon_5</name>
+    </include> -->
+
+    <!-- Beacons -->
+
+    <!-- <include>
+      <uri>model://large_rock</uri>
+      <pose>-60 0 -100 0 0 0</pose>
+      <name>beacon_0</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-50 0 -100 0 0 0</pose>
+      <name>beacon_1</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-40 0 -100 0 0 0</pose>
+      <name>beacon_2</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-30 0 -100 0 0 0</pose>
+      <name>beacon_3</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-20 0 -100 0 0 0</pose>
+      <name>beacon_4</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>-10 0 -100 0 0 0</pose>
+      <name>beacon_5</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>0 0 -100 0 0 0</pose>
+      <name>beacon_6</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>10 0 -100 0 0 0</pose>
+      <name>beacon_7</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>20 0 -100 0 0 0</pose>
+      <name>beacon_8</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>30 0 -100 0 0 0</pose>
+      <name>beacon_9</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>40 0 -100 0 0 0</pose>
+      <name>beacon_10</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>50 0 -100 0 0 0</pose>
+      <name>beacon_11</name>
+    </include>
+
+    <include>
+      <uri>model://large_rock</uri>
+      <pose>60 0 -100 0 0 0</pose>
+      <name>beacon_12</name>
+    </include>
+ -->
+
 
     <!-- Dummy laser -->
     <include>
