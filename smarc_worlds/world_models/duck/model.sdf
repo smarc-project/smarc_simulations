@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="duck">
+    <link name="base_link">
+      <pose>0 0 0.5 0 0 0</pose>
+      <inertial>
+        <mass>10.0</mass>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.345" ixy="0" ixz="0"
+                 iyy="0.345" iyz="0"
+                 izz="0.345" />
+      </inertial>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://duck/meshes/duck.dae</uri>
+            <scale>0.5 0.5 0.5</scale>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://duck/meshes/duck.dae</uri>
+            <scale>0.5 0.5 0.5</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <plugin name="hydro_uuv_plugin" filename="libunderwater_object_ros_plugin.so">
+      <fluid_density>1025.0</fluid_density>
+      <flow_velocity_topic>hydrodynamics/current_velocity</flow_velocity_topic>
+      <debug>1</debug>
+      <link name="base_link">
+        <volume>0.015625</volume>
+        <neutrally_buoyant>0</neutrally_buoyant>
+        <center_of_buoyancy>0 0 0</center_of_buoyancy>
+        <box>
+          <width>0.25</width>
+          <length>0.25</length>
+          <height>0.25</height>
+        </box>
+        <hydrodynamic_model>
+          <type>fossen</type>
+          <!-- <radius>4.0</radius> -->
+          <added_mass>
+            0.93 0 0 0 0 0
+            0 35.5 0 0 0 -1.93
+            0 0 35.5 0 1.93 0 
+            0 0 0 0.0704 0 0
+            0 0 1.93 0 4.88 0
+            0 -1.93 0 0 0 4.88
+          </added_mass>
+          <linear_damping>-5.8596 -38.2014808 -38.2014808 0 -4.09 -4.09</linear_damping>
+          <quadratic_damping>-1.62 -1310 -1310 -0.13 -188 -188</quadratic_damping>
+        </hydrodynamic_model>
+      </link>
+    </plugin>
+  </model>
+</sdf>
+
