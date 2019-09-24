@@ -50,7 +50,7 @@
       samples fov range_min range_max range_stddev mesh
       *inertia *origin *visual">
     <!-- Sensor link -->
-    <link name="${namespace}/sonar${suffix}_link">
+    <link name="${namespace}/mbes_sonar${suffix}_link">
       <inertial>
         <xacro:insert_block name="inertia" />
         <mass value="${mass}" />
@@ -61,15 +61,15 @@
       <xacro:no_collision/>
     </link>
 
-  <joint name="${namespace}_sonar${suffix}_joint" type="revolute">
+  <joint name="${namespace}_mbes${suffix}_joint" type="revolute">
     <xacro:insert_block name="origin" />
     <parent link="${parent_link}" />
-    <child link="${namespace}/sonar${suffix}_link" />
+    <child link="${namespace}/mbes_sonar${suffix}_link" />
     <limit upper="0" lower="0" effort="0" velocity="0" />
     <axis xyz="1 0 0"/>
   </joint>
   
-  <gazebo reference="${namespace}/sonar${suffix}_link">
+  <gazebo reference="${namespace}/mbes_sonar${suffix}_link">
     <sensor type="underwater_sonar" name="sonar${suffix}">
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
@@ -103,7 +103,7 @@
       </ray>
       <plugin name="sonar${suffix}_controller" filename="libunderwater_sonar_ros_plugin.so">
         <topicName>${topic}</topicName>
-        <frameName>sonar${suffix}_link</frameName>
+        <frameName>mbes_sonar${suffix}_link</frameName>
       </plugin>
       <!-- TODO: Separate switchable sonar version in another macro -->
 	  <!-- <plugin name="switchable_sonar{suffix}_ros_interface" filename="libuuv_gazebo_ros_switchable_gpu_ray_sensor.so">
