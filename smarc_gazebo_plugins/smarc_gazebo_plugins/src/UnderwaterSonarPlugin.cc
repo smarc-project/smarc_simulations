@@ -49,8 +49,7 @@ UnderwaterSonarPlugin::UnderwaterSonarPlugin()
 /////////////////////////////////////////////////
 UnderwaterSonarPlugin::~UnderwaterSonarPlugin()
 {
-  this->parentSensor->LaserShape()->DisconnectNewLaserScans(
-      this->newLaserScansConnection);
+  this->parentSensor->LaserShape().reset();
   this->newLaserScansConnection.reset();
 
   this->parentSensor.reset();

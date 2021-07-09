@@ -99,7 +99,7 @@ void UnderwaterSonarSensor::Load(const std::string &_worldName)
       "UnderwaterSonarSensor did not get a valid World pointer");
 
   physics::PhysicsEnginePtr physicsEngine =
-    this->world->GetPhysicsEngine();
+    this->world->Physics();
 
   GZ_ASSERT(physicsEngine != NULL,
       "Unable to get a pointer to the physics engine");
@@ -134,7 +134,7 @@ void UnderwaterSonarSensor::Load(const std::string &_worldName)
   }
 
   this->dataPtr->parentEntity =
-    this->world->GetEntity(this->ParentName());
+    this->world->EntityByName(this->ParentName());
 
   GZ_ASSERT(this->dataPtr->parentEntity != NULL,
       "Unable to get the parent entity.");
@@ -171,7 +171,7 @@ void UnderwaterSonarSensor::Fini()
 ignition::math::Angle UnderwaterSonarSensor::AngleMin() const
 {
   if (this->dataPtr->laserShape)
-    return this->dataPtr->laserShape->GetMinAngle().Ign();
+    return this->dataPtr->laserShape->MinAngle();//Ing()
   else
     return -1;
 }
@@ -182,7 +182,7 @@ ignition::math::Angle UnderwaterSonarSensor::AngleMax() const
   if (this->dataPtr->laserShape)
   {
     return ignition::math::Angle(
-        this->dataPtr->laserShape->GetMaxAngle().Radian());
+        this->dataPtr->laserShape->MaxAngle().Radian());
   }
   else
     return -1;
@@ -316,7 +316,7 @@ ignition::math::Angle UnderwaterSonarSensor::VerticalAngleMin() const
   if (this->dataPtr->laserShape)
   {
     return ignition::math::Angle(
-        this->dataPtr->laserShape->GetVerticalMinAngle().Radian());
+        this->dataPtr->laserShape->VerticalMinAngle().Radian());
   }
   else
     return -1;
@@ -328,7 +328,7 @@ ignition::math::Angle UnderwaterSonarSensor::VerticalAngleMax() const
   if (this->dataPtr->laserShape)
   {
     return ignition::math::Angle(
-        this->dataPtr->laserShape->GetVerticalMaxAngle().Radian());
+        this->dataPtr->laserShape->VerticalMaxAngle().Radian());
   }
   else
     return -1;
@@ -451,7 +451,7 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
   // need to move mutex lock after this? or make the OnNewLaserScan connection
   // call somewhere else?
   this->dataPtr->laserShape->Update();
-  this->lastMeasurementTime = this->world->GetSimTime();
+  this->lastMeasurementTime = this->world->SimTime();
 
   // moving this behind laserShape update
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
@@ -466,7 +466,7 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
   // Store the latest laser scans into laserMsg
   msgs::Set(scan->mutable_world_pose(),
-      this->pose + this->dataPtr->parentEntity->GetWorldPose().Ign());
+      this->pose + this->dataPtr->parentEntity->WorldPose());//.Pos());
   scan->set_angle_min(this->AngleMin().Radian());
   scan->set_angle_max(this->AngleMax().Radian());
   scan->set_angle_step(this->AngleResolution());
@@ -553,11 +553,11 @@ bool UnderwaterSonarSensor::UpdateImpl(const bool /*_force*/)
 
 	// TODO: make these into proper parameters
 	double SL = 200.0; // source level
-    double TS = double(intensity)*(0.5*M_PI-angle)/M_PI; // target strength, probably dir should be DI
+  double TS = double(intensity)*(0.5*M_PI-angle)/M_PI; // target strength, probably dir should be DI
 	double TL = 0.5*range; // transmission loss
 	double NL = 30; // noise level
 	double DI = 0.0; // directivity index 
-    double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
+  double SNR = fmax(SL - 2.0*TL - (NL-DI) + TS, 0.0); // active sonar equation
 
 	//intensity = intensity + 90.0 - 180.0/M_PI*angle;
 	//intensity = 180.0/M_PI*angle;
