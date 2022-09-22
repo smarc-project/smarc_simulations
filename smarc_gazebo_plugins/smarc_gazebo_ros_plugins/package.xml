@@ -48,7 +48,13 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
+  
+
   <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>gazebo_dev</depend>
+  <depend>gazebo_plugins</depend>
+
   <build_depend>smarc_gazebo_plugins</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>

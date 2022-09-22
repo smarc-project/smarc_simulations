@@ -17,8 +17,8 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
   <!-- See  Hall, Anstee - Trim calculation methods for dynamical model of the REMUS 100 autonomous underwater vehicle -->
   <!-- Import macro files -->
-  <xacro:include filename="$(find uuv_descriptions)/models/common/urdf/common.urdf.xacro" />
-  <xacro:include filename="$(find uuv_sensor_plugins_ros)/urdf/sensor_snippets.xacro"/>
+  <xacro:include filename="$(find uuv_descriptions)/urdf/common.urdf.xacro" />
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/sensor_snippets.xacro"/>
   <xacro:include filename="$(find smarc_sensor_plugins_ros)/urdf/sonar_snippets.xacro"/>
 
   <!-- Properties -->
